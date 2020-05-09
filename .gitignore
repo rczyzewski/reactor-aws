@@ -1,0 +1,9 @@
+**/*.swp
+**/tokens/*
+**/target/*
+**/.idea/*
+**/.flattened-pom.xml
+commons/text-extraction/text-extraction-pdf-tools/src/main/resources/credentials.json
+**/*.iml
+
+*.tmp

@@ -1,0 +1,14 @@
+version: '2.0'
+
+services:
+  localstack:
+    image: localstack/localstack
+    environment:
+      - SERVICES=${SERVICES}
+    volumes:
+      - "/tmp/localstack:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - localstack_network
+networks:
+  localstack_network:
