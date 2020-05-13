@@ -1,8 +1,10 @@
 plugins {
     java
-    id("io.freefair.lombok") version "4.1.2"
     id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("io.freefair.lombok") version "5.0.1"
+
 }
+
 
 dependencies {
     compile("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
@@ -23,4 +25,5 @@ dependencies {
     compileOnly("io.projectreactor:reactor-core:3.3.0.RELEASE")
     compileOnly("io.projectreactor.addons:reactor-extra:3.3.0.RELEASE")
     compileOnly("ch.qos.logback:logback-classic:1.2.3")
+
 }

@@ -202,7 +202,7 @@ public final class AwsTestLifecycle
     {
         System.setProperty(CBOR_ENABLED.property(), "false");
 
-        SdkHttpClient ddd = ApacheHttpClient
+        SdkHttpClient sdkHttpClient = ApacheHttpClient
             .builder()
             .buildWithDefaults(
                 AttributeMap
@@ -210,7 +210,7 @@ public final class AwsTestLifecycle
                     .put(TRUST_ALL_CERTIFICATES, true).build());
 
         return KinesisClient.builder()
-            .httpClient(ddd)
+            .httpClient(sdkHttpClient)
             .endpointOverride(URI.create(getUrl(Service.KINESIS)))
             .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
             .build();

@@ -1,8 +1,9 @@
 plugins {
-    id("io.freefair.lombok") version "4.1.2"
+    id("io.freefair.lombok") version "5.0.1"
 }
 
 dependencies {
+
     compile("io.projectreactor:reactor-test:3.3.0.RELEASE")
     compile("org.testcontainers:testcontainers:1.12.2")
     compile("software.amazon.awssdk:cloudwatch:2.9.16")
@@ -17,5 +18,6 @@ dependencies {
     compileOnly("software.amazon.awssdk:dynamodb:2.9.16")
     compileOnly("software.amazon.awssdk:sqs:2.9.16")
     compileOnly("software.amazon.awssdk:s3:2.9.16")
+    compileOnly("software.amazon.awssdk:apache-client:2.9.16")
     compileOnly("software.amazon.awssdk:kinesis:2.9.16")
 }

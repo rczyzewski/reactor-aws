@@ -2,9 +2,7 @@ package com.ravenpack.content.commons.aws.reactor.sqs;
 
 import com.ravenpack.content.commons.aws.reactor.AwsTestLifecycle;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
@@ -17,9 +15,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @Slf4j
+@Disabled
 class RxSqsIT
 {
     private static final AwsTestLifecycle awsTestLifecycle = AwsTestLifecycle.create(RxSqsIT.class);
@@ -78,7 +75,7 @@ class RxSqsIT
                         .waitTimeSeconds(10)
                         .build()))
         ).consumeNextWith(receiveMessageResponse ->
-                              assertEquals(numberOfMessages, receiveMessageResponse.messages().size()))
+                              Assertions.assertEquals(numberOfMessages, receiveMessageResponse.messages().size()))
             .verifyComplete();
     }
 
@@ -109,7 +106,7 @@ class RxSqsIT
                         .waitTimeSeconds(10)
                         .build()))
         ).consumeNextWith(receiveMessageResponse ->
-                              assertEquals(numberOfMessages, receiveMessageResponse.messages().size()))
+                              Assertions.assertEquals(numberOfMessages, receiveMessageResponse.messages().size()))
             .verifyComplete();
     }
 

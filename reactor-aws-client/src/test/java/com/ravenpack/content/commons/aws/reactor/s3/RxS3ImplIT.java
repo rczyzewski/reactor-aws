@@ -1,10 +1,9 @@
 package com.ravenpack.content.commons.aws.reactor.s3;
 
 import com.ravenpack.content.commons.aws.reactor.AwsTestLifecycle;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import com.ravenpack.content.commons.aws.reactor.s3.RxS3;
+import com.ravenpack.content.commons.aws.reactor.s3.RxS3Impl;
+import org.junit.jupiter.api.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
@@ -21,6 +20,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 class RxS3ImplIT
 {
     private static final String KEY = "objectkey";

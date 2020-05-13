@@ -1,7 +1,11 @@
 package com.ravenpack.content.commons.aws.reactor.kinesis;
 
 import com.ravenpack.content.commons.aws.reactor.AwsTestLifecycle;
+import com.ravenpack.content.commons.aws.reactor.kinesis.RxKinesis;
+import com.ravenpack.content.commons.aws.reactor.kinesis.SchedulerFactory;
+import com.ravenpack.content.commons.aws.reactor.kinesis.WorldConnector;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
@@ -28,6 +32,7 @@ import java.util.concurrent.Executors;
 import static software.amazon.kinesis.common.InitialPositionInStream.TRIM_HORIZON;
 import static software.amazon.kinesis.common.InitialPositionInStreamExtended.newInitialPosition;
 
+@Disabled
 class KinesisIT
 {
 

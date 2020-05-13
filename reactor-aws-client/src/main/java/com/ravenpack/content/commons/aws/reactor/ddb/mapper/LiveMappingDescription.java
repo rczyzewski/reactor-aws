@@ -32,11 +32,13 @@ public class LiveMappingDescription<T>
     public T transform(Map<String, AttributeValue> m)
     {
 
-        var initialObject  = supplier.get();
-        for( var e : m.entrySet() ){
+         T initialObject  = supplier.get();
 
-            var key = e.getKey();
-            var value = e.getValue();
+
+        for( Map.Entry<String,AttributeValue> e : m.entrySet() ){
+
+            String key = e.getKey();
+            AttributeValue value = e.getValue();
 
             if ( ! dict.containsKey(key)) continue;
 
