@@ -116,7 +116,28 @@ public class LiveDescriptionGenerator
                                                      "value -> $T.of(value.get$L()).map(it->$T.builder().ss().build())",
                                                      Optional.class, sufix, AttributeValue.class));
 
-        } else if (FieldDescription.DDBType.C == fieldDescription.getDdbType()) {
+        } if (fieldDescription.getTypeName().startsWith("java.util.List")) {
+
+
+        String liveMappingName = TypoUtils.toSnakeCase(fieldDescription.getClassDescription().getName());
+
+
+//        (bean, value) -> bean.withPayload(value.l().stream().map(AttributeValue::m).map(INNER_OBJECT::transform).collect(Collectors.toList())),
+ //               value -> Optional.of(value.getPayload()).map(it->AttributeValue.builder().l(it.stream().map(INNER_OBJECT::export).map(iit -> AttributeValue.builder().m(iit).build()).toArray(AttributeValue[]::new)
+
+
+
+        return createFieldMappingDescription(fieldDescription.getAttribute(), isKeyValue,
+                CodeBlock.of("(bean, value) -> bean.with$L(value.l().stream().map($T::m).map($L::transform).collect(Collectors.toList()))", sufix ,AttributeValue.class, liveMappingName),
+                CodeBlock.of("value -> $T.of(value.get$L()).map(it->$T.builder().l(it.stream().map($L::export).map(iit -> $T.builder().m(iit).build()).collect($T.toList())).build())",
+                        Optional.class, sufix, AttributeValue.class, liveMappingName, AttributeValue.class, Collectors.class));
+
+    }
+
+
+
+
+        else if (FieldDescription.DDBType.C == fieldDescription.getDdbType()) {
 
             return createFieldMappingDescription(fieldDescription.getAttribute(), isKeyValue,
                                                  CodeBlock.of("(bean, value) ->  bean.with$L($T.valueOf(value.$L()))",

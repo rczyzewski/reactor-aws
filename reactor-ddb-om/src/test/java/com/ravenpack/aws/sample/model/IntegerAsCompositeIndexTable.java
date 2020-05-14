@@ -11,18 +11,18 @@ import lombok.With;
 @Value
 @Builder
 @DynamoDBTable
-public class IntegerAsCompositeIndex
+public class IntegerAsCompositeIndexTable
 {
 
     @DynamoDBHashKey
-    private final Integer uid;
+    Integer uid;
 
     @DynamoDBRangeKey
-    private final Integer range;
+    Integer range;
 
-    private final String payload;
+    String payload;
 
-    private final Integer val;
+    Integer val;
 
-    private final Double fuzzyVal;
+    Double fuzzyVal;
 }

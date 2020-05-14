@@ -15,14 +15,14 @@ import lombok.With;
 public class CompositePrimaryIndexTable
 {
     @DynamoDBHashKey
-    private final String uid;
+    String uid;
 
     @DynamoDBRangeKey
-    private final String range;
+    String range;
 
-    private final String payload;
+    String payload;
 
-    private final Integer val;
+    Integer val;
 
-    private final Double fuzzyVal;
+    Double fuzzyVal;
 }

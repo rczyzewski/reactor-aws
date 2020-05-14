@@ -2,18 +2,7 @@ package com.ravenpack.aws.sample.it;
 
 import com.ravenpack.aws.reactor.ReactorAWS;
 import com.ravenpack.aws.reactor.ddb.RxDynamo;
-import com.ravenpack.aws.sample.model.GlobalHashIndexTable;
-import com.ravenpack.aws.sample.model.GlobalHashIndexTableRepository;
-import com.ravenpack.aws.sample.model.GlobalRangeIndexTable;
-import com.ravenpack.aws.sample.model.GlobalRangeIndexTableRepository;
-import com.ravenpack.aws.sample.model.HashPrimaryIndexTable;
-import com.ravenpack.aws.sample.model.HashPrimaryIndexTableRepository;
-import com.ravenpack.aws.sample.model.IntegerAsCompositeIndex;
-import com.ravenpack.aws.sample.model.IntegerAsCompositeIndexRepository;
-import com.ravenpack.aws.sample.model.InternalDocumentTable;
-import com.ravenpack.aws.sample.model.InternalDocumentTableRepository;
-import com.ravenpack.aws.sample.model.LocalSecondaryIndexTable;
-import com.ravenpack.aws.sample.model.LocalSecondaryIndexTableRepository;
+import com.ravenpack.aws.sample.model.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Hooks;
@@ -158,9 +147,9 @@ class TableCreationInsertAndMappingTest
     void integerAsCompositeIndexRepository()
     {
 
-        IntegerAsCompositeIndexRepository repo = new IntegerAsCompositeIndexRepository(rxDynamo, getTableName());
+        IntegerAsCompositeIndexTableRepository repo = new IntegerAsCompositeIndexTableRepository(rxDynamo, getTableName());
 
-        IntegerAsCompositeIndex item = IntegerAsCompositeIndex
+        IntegerAsCompositeIndexTable item = IntegerAsCompositeIndexTable
             .builder()
             .uid(12)
             .range(33)
@@ -175,7 +164,7 @@ class TableCreationInsertAndMappingTest
                 .flatMap(repo::create)
                 .ignoreElement()
                 .thenReturn(repo)
-                .flatMapMany(IntegerAsCompositeIndexRepository::getAll))
+                .flatMapMany(IntegerAsCompositeIndexTableRepository::getAll))
             .expectNext(item)
             .verifyComplete();
     }

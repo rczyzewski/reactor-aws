@@ -7,28 +7,27 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-@With
-@Builder
-@Value
-@DynamoDBTable
-public class InternalDocumentTable
-{
+import java.util.List;
 
+@DynamoDBTable
+@Value
+@Builder
+@With
+public class ListWithObjectsFieldTable {
     @DynamoDBHashKey
     String uid;
 
-    String payload;
+    List<InnerObject> payload;
 
-    InternalDocumentContent content;
 
     @With
     @Value
     @Builder
     @DynamoDBDocument
-    public static class InternalDocumentContent
-    {
-
-        String payload;
+    public static class InnerObject{
+        String name;
+        String age;
     }
 }
+
 

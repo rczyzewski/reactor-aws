@@ -5,10 +5,11 @@ import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBIndexHashKey;
 import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBTable;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 import lombok.With;
 
 @With
-@Data
+@Value
 @Builder
 @DynamoDBTable
 public class GlobalHashIndexTable

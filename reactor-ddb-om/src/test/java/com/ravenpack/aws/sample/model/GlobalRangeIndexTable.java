@@ -6,23 +6,24 @@ import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBIndexRangeKey;
 import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBTable;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 import lombok.With;
 
 @With
-@Data
+@Value
 @Builder
 @DynamoDBTable
 public class GlobalRangeIndexTable
 {
 
     @DynamoDBHashKey
-    private final String uid;
+    String uid;
 
     @DynamoDBIndexHashKey(globalSecondaryIndexNames = { "globalSecondaryIndexName" })
-    private final String globalId;
+    String globalId;
 
     @DynamoDBIndexRangeKey(globalSecondaryIndexNames = { "globalSecondaryIndexName" })
-    private final String globalRange;
+    String globalRange;
 
-    private final String payload;
+    String payload;
 }

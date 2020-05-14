@@ -6,23 +6,24 @@ import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBRangeKey;
 import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBTable;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 import lombok.With;
 
 @With
-@Data
+@Value
 @Builder
 @DynamoDBTable
 public class LocalSecondaryIndexTable
 {
 
     @DynamoDBHashKey
-    private final String uid;
+    String uid;
 
     @DynamoDBRangeKey
-    private final String range;
+    String range;
 
     @DynamoDBLocalIndexRangeKey(localSecondaryIndexName = "secondRange")
-    private final String secondRange;
+    String secondRange;
 
-    private final String payload;
+    String payload;
 }

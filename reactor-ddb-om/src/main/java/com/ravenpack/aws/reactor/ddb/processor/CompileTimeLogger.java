@@ -10,8 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.WARNING;
+import static javax.tools.Diagnostic.Kind.*;
 
 @AllArgsConstructor
 public class CompileTimeLogger implements Logger
@@ -28,7 +27,7 @@ public class CompileTimeLogger implements Logger
 
     public void info(String arg)
     {
-        msg(WARNING, arg);
+        msg(NOTE, arg);
     }
 
     public void warn(String arg)

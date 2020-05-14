@@ -14,7 +14,7 @@ public class HashPrimaryIndexTable
 {
 
     @DynamoDBHashKey
-    private final String uid;
+    String uid;
 
-    private final String payload;
+    String payload;
 }

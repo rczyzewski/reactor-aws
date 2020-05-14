@@ -73,7 +73,7 @@ public class DynamoDBProcessor extends AbstractProcessor
         super.init(processingEnvironment);
         filer = processingEnvironment.getFiler();
         logger = new CompileTimeLogger(processingEnvironment.getMessager());
-        logger.warn("DDBRepoGenerator initialized");
+        logger.info("DDBRepoGenerator initialized");
         descriptionGenerator = new LiveDescriptionGenerator(logger);
         types = processingEnvironment.getTypeUtils();
 
@@ -94,10 +94,10 @@ public class DynamoDBProcessor extends AbstractProcessor
                 .map(classAnalyzer::generate)
                 .forEach(this::writeToFile);
         } catch (Exception e) {
-            logger.warn(e.getMessage());
+            logger.error(e.getMessage());
             for (StackTraceElement line : e.getStackTrace()) {
 
-                logger.warn(line.getClassName() + "" + line.getMethodName() + ":" + line.getLineNumber());
+                logger.error(line.getClassName() + "" + line.getMethodName() + ":" + line.getLineNumber());
             }
             throw e;
         }
@@ -257,21 +257,21 @@ public class DynamoDBProcessor extends AbstractProcessor
                                                  classDescription.getName() + "Repository",
                 TypoUtils.toClassName(indexDescription.getName()) +
                                                  "CustomSearch", "KeyFilterCreator");
-        logger.warn("customSearchKF" + customSearchKF);
+        logger.info("customSearchKF" + customSearchKF);
 
         ClassName customSearchAF = ClassName.get(classDescription.getPackageName(),
                                                  classDescription.getName() + "Repository",
                 TypoUtils.toClassName(indexDescription.getName()) +
                                                  "CustomSearch", "FilterCreator");
 
-        logger.warn("customSearchAF" + customSearchAF);
+        logger.info("customSearchAF" + customSearchAF);
 
         ClassName customSearchCN = ClassName.get(classDescription.getPackageName(),
                                                  classDescription.getName() + "Repository",
                 TypoUtils.toClassName(indexDescription.getName()) +
                                                  "CustomSearch");
 
-        logger.warn("customSearchCN" + customSearchCN);
+        logger.info("customSearchCN" + customSearchCN);
 
         TypeSpec queryClass = TypeSpec.classBuilder(customSearchAF)
             .addModifiers(PUBLIC, FINAL)

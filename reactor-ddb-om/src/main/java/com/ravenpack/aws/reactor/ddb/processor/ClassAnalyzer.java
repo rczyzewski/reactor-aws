@@ -16,8 +16,7 @@ import lombok.SneakyThrows;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +40,7 @@ public class ClassAnalyzer
     ClassDescription generate(Element element)
     {
 
+
         if (null != element.getAnnotation(DynamoDBTable.class) ||
             null != element.getAnnotation(DynamoDBDocument.class)) {
 
@@ -57,6 +57,11 @@ public class ClassAnalyzer
                 .build();
         } else if (null != types.asElement(element.asType()).getAnnotation(DynamoDBDocument.class)) {
             return generate(types.asElement(element.asType()));
+        } else if (element.asType() instanceof  DeclaredType && !((DeclaredType) element.asType()).getTypeArguments().isEmpty()) {
+
+            TypeMirror parametrzedType = ((DeclaredType) element.asType()).getTypeArguments().get(0);
+            return generate(types.asElement(parametrzedType) );
+
         } else {
             return null;
         }
@@ -75,9 +80,13 @@ public class ClassAnalyzer
         return null;
     }
 
+
+
     public FieldDescription analyze(Element e)
     {
         String name = e.getSimpleName().toString();
+
+
 
         FieldDescription.DDBType ddbType = Arrays.stream(FieldDescription.DDBType.values())
             .filter(it -> it.match(e))

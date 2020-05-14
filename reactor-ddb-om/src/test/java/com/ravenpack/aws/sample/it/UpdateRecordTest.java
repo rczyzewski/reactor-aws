@@ -5,7 +5,6 @@ import com.ravenpack.aws.reactor.ddb.RxDynamo;
 import com.ravenpack.aws.sample.model.CompositePrimaryIndexTable;
 import com.ravenpack.aws.sample.model.CompositePrimaryIndexTableRepository;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Hooks;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
@@ -16,11 +15,9 @@ class UpdateRecordTest
 
     private static DynamoDbAsyncClient ddbClient = TestInfrastrucureHelper.dynamoDbAsyncClient();
 
-    static {
-        Hooks.onOperatorDebug();
-    }
 
     private final RxDynamo rxDynamo = ReactorAWS.dynamo(ddbClient);
+
 
     @Test
     void simpleUpdate()
