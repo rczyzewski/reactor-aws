@@ -18,7 +18,7 @@ dependencies {
     testCompile("org.junit.jupiter:junit-jupiter-engine:5.5.2")
     testCompile("org.mockito:mockito-junit-jupiter:3.0.0")
     testCompile("io.projectreactor:reactor-test:3.3.0.RELEASE")
-    testCompile("org.testcontainers:testcontainers:1.12.2")
+    //testCompile("org.testcontainers:testcontainers:1.12.2")
     testCompile("org.assertj:assertj-core:3.13.2")
     compileOnly("org.projectlombok:lombok:1.18.10")
     compileOnly("org.projectlombok:lombok-utils:1.18.10")

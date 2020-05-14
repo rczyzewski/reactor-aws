@@ -5,7 +5,8 @@ plugins {
 dependencies {
 
     compile("io.projectreactor:reactor-test:3.3.0.RELEASE")
-    compile("org.testcontainers:testcontainers:1.12.2")
+    compile("org.testcontainers:testcontainers:1.14.1")
+    compile( "org.testcontainers:localstack:1.14.1")
     compile("software.amazon.awssdk:cloudwatch:2.9.16")
     compile("org.mockito:mockito-junit-jupiter:3.0.0")
     compile("software.amazon.awssdk:netty-nio-client:2.9.16")
