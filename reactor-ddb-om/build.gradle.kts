@@ -54,8 +54,8 @@ publishing {
 
     repositories {
         maven {
-            name = "reactor-ddb-om"
-            url = uri("https://maven.pkg.github.com/rczyzewski/reactor-ddb-om")
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/rczyzewski/reactor-aws")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
