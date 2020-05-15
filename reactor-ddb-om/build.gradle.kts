@@ -1,6 +1,7 @@
 plugins {
     java
     idea
+    `maven-publish`
     id("io.freefair.lombok") version "4.1.2"
     id("name.remal.apt") version "1.0.190"
 }
@@ -10,7 +11,7 @@ dependencies {
     compile("com.squareup:javapoet:1.11.1")
     compile("io.projectreactor:reactor-core:3.3.0.RELEASE")
 
-    
+
     compile("org.slf4j:slf4j-api:1.7.28")
     compile(project(":reactor-aws-client"))
     compile("com.google.auto.service:auto-service:1.0-rc6")
@@ -40,5 +41,26 @@ sourceSets["test"].java {
 tasks.named<Test>("test") {
     useJUnitPlatform()
 
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+
+            // Include any other artifacts here, like javadocs
+        }
+    }
+
+    repositories {
+        maven {
+            name = "reactor-ddb-om"
+            url = uri("https://maven.pkg.github.com/rczyzewski/reactor-ddb-om")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
 
