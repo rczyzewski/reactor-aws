@@ -9,10 +9,10 @@ import lombok.With;
 
 import java.util.List;
 
-@DynamoDBTable
 @Value
 @Builder
 @With
+@DynamoDBTable
 public class ListWithObjectsFieldTable {
     @DynamoDBHashKey
     String uid;

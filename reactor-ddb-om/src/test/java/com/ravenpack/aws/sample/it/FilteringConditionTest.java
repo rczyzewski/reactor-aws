@@ -8,6 +8,7 @@ import com.ravenpack.aws.sample.model.CompositePrimaryIndexTableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -17,7 +18,7 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Function;
 
-
+@Disabled
 @Slf4j
 class FilteringConditionTest
 {

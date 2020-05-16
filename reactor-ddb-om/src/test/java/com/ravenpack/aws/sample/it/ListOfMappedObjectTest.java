@@ -4,12 +4,14 @@ import com.ravenpack.aws.reactor.ReactorAWS;
 import com.ravenpack.aws.reactor.ddb.RxDynamo;
 import com.ravenpack.aws.sample.model.ListWithObjectsFieldTable;
 import com.ravenpack.aws.sample.model.ListWithObjectsFieldTableRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 import java.util.ArrayList;
 
+@Disabled
 public class ListOfMappedObjectTest {
 
     private static DynamoDbAsyncClient ddbClient = TestInfrastrucureHelper.dynamoDbAsyncClient();

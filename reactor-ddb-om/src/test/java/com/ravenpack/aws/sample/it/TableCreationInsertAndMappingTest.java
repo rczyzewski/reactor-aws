@@ -4,13 +4,14 @@ import com.ravenpack.aws.reactor.ReactorAWS;
 import com.ravenpack.aws.reactor.ddb.RxDynamo;
 import com.ravenpack.aws.sample.model.*;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Hooks;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 import java.util.UUID;
-
+@Disabled
 class TableCreationInsertAndMappingTest
 {
 

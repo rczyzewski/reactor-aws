@@ -18,11 +18,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
-import lombok.AllArgsConstructor;
-import lombok.Generated;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.With;
+import lombok.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.Condition;
@@ -57,8 +53,12 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 
+/***
+ * This is the entry point for generating repository, based on model classes
+ */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
+@NoArgsConstructor
 public class DynamoDBProcessor extends AbstractProcessor
 {
 
