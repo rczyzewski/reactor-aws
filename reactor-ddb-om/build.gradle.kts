@@ -3,7 +3,6 @@ plugins {
     idea
     `maven-publish`
     id("io.freefair.lombok") version "5.0.1"
-   // id("name.remal.apt") version "1.0.190"
 }
 
 
@@ -24,6 +23,8 @@ dependencies {
 
 
     testCompile("ch.qos.logback:logback-classic:1.2.3")
+    testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
+
     testCompile("org.assertj:assertj-core:3.13.2")
     testCompile("org.mockito:mockito-junit-jupiter:3.0.0")
     testCompile("io.projectreactor:reactor-test:3.3.0.RELEASE")
@@ -35,10 +36,10 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
 
 
-    compileOnly("software.amazon.awssdk:dynamodb:2.9.16")
-    compile("software.amazon.awssdk:dynamodb:2.9.16")
-    testCompileOnly("software.amazon.awssdk:dynamodb:2.9.16")
-    testRuntimeOnly("software.amazon.awssdk:dynamodb:2.9.16")
+    compileOnly("software.amazon.awssdk:dynamodb:2.13.8")
+    compile("software.amazon.awssdk:dynamodb:2.13.8")
+    testCompileOnly("software.amazon.awssdk:dynamodb:2.13.8")
+    testRuntimeOnly("software.amazon.awssdk:dynamodb:2.13.8")
     testRuntimeOnly("com.amazonaws:aws-java-sdk-dynamodb:1.11.781")
 
 
