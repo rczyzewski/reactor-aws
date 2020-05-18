@@ -1,6 +1,6 @@
 plugins {
+    `maven-publish`
     `java-library`
-   // id("com.github.johnrengelman.shadow") version "5.1.0"
     id("io.freefair.lombok") version "5.0.1"
 
 }
@@ -38,4 +38,25 @@ dependencies {
     compileOnly("io.projectreactor.addons:reactor-extra:3.3.3.RELEASE")
 
 
+}
+
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        mavenLocal()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/rczyzewski/reactor-aws")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
