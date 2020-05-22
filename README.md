@@ -91,7 +91,7 @@ public class SmpleApp {
     }
 ```
 
-That is much shorter way, ten using amazon client directly: https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/examples-dynamodb.html
+That is much shorter way, than using amazon client directly: https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/examples-dynamodb.html
 
 
 ![Java CI with Gradle](https://github.com/rczyzewski/reactor-aws/workflows/Java%20CI%20with%20Gradle/badge.svg)
