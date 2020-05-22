@@ -19,6 +19,8 @@ dependencies {
     compileOnly("software.amazon.awssdk:dynamodb:2.13.8")
     compileOnly("software.amazon.awssdk:sqs:2.13.8")
     compileOnly("software.amazon.awssdk:s3:2.13.8")
+    compileOnly("software.amazon.awssdk:lambda:2.13.8")
+    compileOnly("software.amazon.awssdk:cloudwatchlogs:2.13.8")
     compileOnly("software.amazon.awssdk:apache-client:2.13.8")
     compileOnly("software.amazon.awssdk:kinesis:2.13.8")
 }
