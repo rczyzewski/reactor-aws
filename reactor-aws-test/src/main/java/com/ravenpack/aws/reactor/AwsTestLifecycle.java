@@ -1,4 +1,4 @@
-package com.ravenpack.content.commons.aws.reactor;
+package com.ravenpack.aws.reactor;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
