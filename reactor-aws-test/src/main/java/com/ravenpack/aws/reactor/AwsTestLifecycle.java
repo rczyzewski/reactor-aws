@@ -72,6 +72,7 @@ import static software.amazon.awssdk.core.SdkSystemSetting.CBOR_ENABLED;
 import static software.amazon.awssdk.http.SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES;
 
 @Slf4j
+@Deprecated
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AwsTestLifecycle
 {
@@ -111,6 +112,7 @@ public final class AwsTestLifecycle
                                                                 Wait.forListeningPort()));
 
         dockerComposeContainer.start();
+
 
         Runtime.getRuntime().addShutdownHook(new Thread(dockerComposeContainer::stop));
 

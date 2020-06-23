@@ -27,7 +27,8 @@ public interface RxSqs
 
     Flux<Message> getAll(@NotNull String queueUrl);
 
-    @Contract(pure = true)
     @NotNull
     Function<Flux<Message>, Flux<DeleteMessageBatchResultEntry>> delete(Mono<String> queueUrl);
+
+
 }

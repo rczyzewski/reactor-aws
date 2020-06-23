@@ -1,8 +1,14 @@
 package com.ravenpack.aws.reactor.sqs;
 
-import com.ravenpack.aws.reactor.AwsTestLifecycle;
+import com.ravenpack.aws.reactor.Localstack;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
@@ -16,18 +22,18 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Slf4j
-@Disabled
-class RxSqsIT
+@Testcontainers
+class RxSqsITTest
 {
-    private static final AwsTestLifecycle awsTestLifecycle = AwsTestLifecycle.create(RxSqsIT.class);
-    private final SqsAsyncClient sqsClient = awsTestLifecycle.getSqsAsyncClient();
+    @Container
+    private static final Localstack localstack = new Localstack()
+            .withServices(Localstack.Service.SQS);
+
+    private final SqsAsyncClient sqsClient = localstack.getSqsAsyncClient();
     private final RxSqs rxSqs = RxSqsImpl.builder()
-        .client(sqsClient)
-        .settings(RxSqsSettings.builder()
-                      .maximumBatchSize(10)
-                      .maximumBatchWait(Duration.ofSeconds(1))
-                      .build()
-        ).build();
+            .client(sqsClient)
+            .build();
+
 
     @BeforeAll
     static void beforeClass()
@@ -38,27 +44,31 @@ class RxSqsIT
     @AfterAll
     static void cleanUp()
     {
-        awsTestLifecycle.sqsCleanup();
+        localstack.sqsCleanup();
     }
 
     @Test
     void shouldGetQueueUrl()
     {
-        String queueUrl = awsTestLifecycle.createSqsQueue();
-        String queueName = awsTestLifecycle.getSqsQueueName(queueUrl);
+
+        String queueName = "queueName";
+
+        String queueUrl = localstack.createSqsQueue(queueName);
 
         StepVerifier.create(rxSqs.queueUrl(queueName))
-            .expectNext(queueUrl)
-            .verifyComplete();
+                .expectNext(queueUrl)
+                .verifyComplete();
+
     }
 
     @Test
-    void shouldSuccessfullySendMessagesBatch()
+    void testShouldSuccessfullySendMessagesBatch()
     {
+
         int numberOfMessages = 3;
         Flux<Message> messages = createMessageFlux(numberOfMessages);
 
-        String queueUrl = awsTestLifecycle.createSqsQueue();
+        String queueUrl = localstack.createSqsQueue("queueName");
 
         StepVerifier.create(rxSqs.send(queueUrl, messages, Objects::toString)
                                 .filter(t -> MessageStatus.SUCCESS.equals(t.getT2()))
@@ -82,10 +92,11 @@ class RxSqsIT
     @Test
     void shouldSuccessfullySendMessagesBatchWithCustomBatchSizeFlatMap()
     {
+
         int numberOfMessages = 5;
         Flux<Message> messages = createMessageFlux(numberOfMessages);
 
-        String queueUrl = awsTestLifecycle.createSqsQueue();
+        String queueUrl = localstack.createSqsQueue("someUrl");
 
         StepVerifier.create(
             messages.window(numberOfMessages)
@@ -115,7 +126,7 @@ class RxSqsIT
     {
         int numberOfMessages = 15;
 
-        Mono<String> queueUrl = Mono.just(awsTestLifecycle.createSqsQueue());
+        Mono<String> queueUrl = Mono.just(localstack.createSqsQueue("someame"));
 
         Flux<Message> messages = createMessageFlux(numberOfMessages).delayElements(Duration.ofMillis(100));
 

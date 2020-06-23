@@ -13,6 +13,8 @@ import reactor.util.function.Tuples;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchResponse;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchResultEntry;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageResponse;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -149,18 +151,31 @@ public class RxSqsImpl implements RxSqs
     }
 
 
+    public Mono<DeleteMessageResponse> delete(Message message, Mono<String> queueUrl) {
+
+        return queueUrl
+                .map(it -> DeleteMessageRequest.builder()
+                    .queueUrl(it)
+                    .receiptHandle(message.receiptHandle())
+                    .build())
+                .map(client::deleteMessage)
+                .flatMap(Mono::fromFuture)
+                .map( it -> it.);
+    }
+
 
     @Override
     public @NotNull Function<Flux<Message>, Flux<DeleteMessageBatchResultEntry>> delete(Mono<String> queueUrl) {
         return f ->
                 f.bufferTimeout(settings.getMaximumBatchSize(), settings.getMaximumBatchWait())
-                        .transform(RxUtils.toMapWithIndex())
+                        .transform(RxUtils::toNewIndex)
                         .withLatestFrom(queueUrl, Tuples::of)
                         .flatMap(indexedMap -> requestFactory.createDeleteMessageBatchRequest(indexedMap.getT1(), indexedMap.getT2()))
                         .log("Batch deleting messages.", Level.FINER, SignalType.ON_NEXT)
                         .flatMap(deleteRequest -> Mono.fromFuture(client.deleteMessageBatch(deleteRequest))
                                 .log("Batch delete complete. ", Level.FINER, SignalType.ON_NEXT)
                                 .log("Batch delete failed. ", Level.WARNING, SignalType.ON_ERROR)
+                                .log()
                                 .map(DeleteMessageBatchResponse::successful)
                                 .flatMapMany(Flux::fromIterable)
                                 .onErrorResume(e -> Mono.empty()));

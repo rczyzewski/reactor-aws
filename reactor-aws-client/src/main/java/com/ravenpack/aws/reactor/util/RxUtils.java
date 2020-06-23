@@ -23,4 +23,12 @@ public final class RxUtils
                         .index()
                         .collectMap(Tuple2::getT1, Tuple2::getT2));
     }
+
+    public static <T> Publisher<Map<Long, T>>  toNewIndex(Flux<List<T>> f){
+
+        return  f.flatMap(
+                list -> Flux.fromIterable(list)
+                                .index()
+                                .collectMap(Tuple2::getT1, Tuple2::getT2));
+    }
 }

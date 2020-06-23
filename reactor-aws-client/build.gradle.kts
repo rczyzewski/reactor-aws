@@ -16,23 +16,19 @@ dependencies {
 
 
 
-    testCompile("org.junit.jupiter:junit-jupiter-api:5.5.2")
-    testCompile(project(":reactor-aws-test"))
-    testCompile("org.junit.jupiter:junit-jupiter-engine:5.5.2")
-    testCompile("org.mockito:mockito-junit-jupiter:3.0.0")
-    testCompile("io.projectreactor:reactor-test:3.3.5.RELEASE")
-    testCompile("org.assertj:assertj-core:3.13.2")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 
+    testImplementation(project(":reactor-aws-test"))
+    testImplementation("org.mockito:mockito-junit-jupiter:3.0.0")
+    testImplementation("io.projectreactor:reactor-test:3.3.5.RELEASE")
+    testImplementation("org.assertj:assertj-core:3.13.2")
+    
+    testImplementation("org.testcontainers:junit-jupiter:1.14.3")
 
-    testCompileOnly("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
-    testCompileOnly("software.amazon.awssdk:dynamodb:2.13.8")
-    testCompileOnly("software.amazon.awssdk:sqs:2.13.8")
-    testCompileOnly("software.amazon.awssdk:s3:2.13.8")
+    testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
-    testRuntimeOnly("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
-    testRuntimeOnly("software.amazon.awssdk:dynamodb:2.13.8")
-    testRuntimeOnly("software.amazon.awssdk:sqs:2.13.8")
-    testRuntimeOnly("software.amazon.awssdk:s3:2.13.8")
+    testImplementation("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
 
     compileOnly("io.projectreactor:reactor-core:3.3.5.RELEASE")
     compileOnly("io.projectreactor.addons:reactor-extra:3.3.3.RELEASE")
