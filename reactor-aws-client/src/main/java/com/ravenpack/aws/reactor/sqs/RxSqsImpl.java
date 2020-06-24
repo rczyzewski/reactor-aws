@@ -159,8 +159,7 @@ public class RxSqsImpl implements RxSqs
                     .receiptHandle(message.receiptHandle())
                     .build())
                 .map(client::deleteMessage)
-                .flatMap(Mono::fromFuture)
-                .map( it -> it.);
+                .flatMap(Mono::fromFuture);
     }
 
 
