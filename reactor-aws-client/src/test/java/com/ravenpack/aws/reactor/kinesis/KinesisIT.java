@@ -1,19 +1,21 @@
 package com.ravenpack.aws.reactor.kinesis;
 
-import com.ravenpack.aws.reactor.AwsTestLifecycle;
+import com.ravenpack.aws.reactor.Localstack;
+import com.ravenpack.aws.reactor.TestHelperCloudWatch;
+import com.ravenpack.aws.reactor.TestHelperDynamoDB;
+import com.ravenpack.aws.reactor.TestHelperKinesis;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
-import software.amazon.awssdk.services.kinesis.model.CreateStreamRequest;
-import software.amazon.awssdk.services.kinesis.model.CreateStreamResponse;
 import software.amazon.awssdk.services.kinesis.model.DescribeStreamRequest;
 import software.amazon.awssdk.services.kinesis.model.PutRecordRequest;
 import software.amazon.awssdk.services.kinesis.model.PutRecordResponse;
@@ -23,21 +25,29 @@ import software.amazon.kinesis.retrieval.polling.PollingConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 import static software.amazon.kinesis.common.InitialPositionInStream.TRIM_HORIZON;
 import static software.amazon.kinesis.common.InitialPositionInStreamExtended.newInitialPosition;
 
-@Disabled
+@Testcontainers
+@Slf4j
 class KinesisIT
 {
 
     private static final String STREAM = "aKinesisStream";
-    private static final AwsTestLifecycle awsTestLifecycle = AwsTestLifecycle.create(KinesisIT.class);
-    private final CloudWatchAsyncClient cloudWatchAsyncClient = awsTestLifecycle.getCloudWatchAsyncClient();
-    private final KinesisAsyncClient kinesisAsyncClient = awsTestLifecycle.getKinesisAsyncClient();
-    private final DynamoDbAsyncClient dynamoDbAsyncClient = awsTestLifecycle.getDdbAsyncClient();
+
+    @Container
+    private static final Localstack localstack =  new Localstack().withServices(Localstack.Service.DDB,
+            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+            .withLogConsumer(new Slf4jLogConsumer(log));
+
+
+    TestHelperCloudWatch testHelperCloudWatch = new TestHelperCloudWatch(localstack);
+    TestHelperKinesis  testHelperKinesis = new TestHelperKinesis(localstack);
+    TestHelperDynamoDB testHelperDynamoDB  = new TestHelperDynamoDB(localstack);
+
+
 
     @BeforeAll
     static void beforeClass()
@@ -49,17 +59,11 @@ class KinesisIT
     void simpleIntegrationTest()
     {
 
-        System.setProperty("aws.cborEnabled", "false");
+        testHelperKinesis.createStream(STREAM);
 
-        CompletableFuture<CreateStreamResponse> createStreamResponseMono = kinesisAsyncClient
-            .createStream(
-                CreateStreamRequest.builder()
-                    .shardCount(1)
-                    .streamName(STREAM)
-                    .build());
+        KinesisAsyncClient kinesisAsyncClient = testHelperKinesis.getKinesisAsyncClient();
 
-        Mono.fromFuture(createStreamResponseMono).doOnError(Throwable::getCause).log().block();
-
+        /* Waiting untill STREAM is active */
         Flux.range(0, 100)
             .delayElements(Duration.ofMillis(10))
             .log()
@@ -87,8 +91,8 @@ class KinesisIT
             .appName("thisAppName")
             .workIdentifier("externallyProvidedIdentifier")
             .kinesisAsyncClient(kinesisAsyncClient)
-            .dynamoDbAsyncClient(dynamoDbAsyncClient)
-            .cloudWatchAsyncClient(cloudWatchAsyncClient)
+            .dynamoDbAsyncClient(testHelperDynamoDB.getDdbAsyncClient())
+            .cloudWatchAsyncClient(testHelperCloudWatch.getCloudWatchAsyncClient())
             .retrievalConfig(configsBuilder -> configsBuilder.retrievalConfig()
                 .initialPositionInStreamExtended(newInitialPosition(TRIM_HORIZON))
                 .retrievalSpecificConfig(

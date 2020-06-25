@@ -2,7 +2,6 @@ plugins {
     `maven-publish`
     `java-library`
     id("io.freefair.lombok") version "5.0.1"
-
 }
 
 
@@ -26,7 +25,7 @@ dependencies {
     
     testImplementation("org.testcontainers:junit-jupiter:1.14.3")
 
-    testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation("ch.qos.logback:logback-classic:1.2.3")
 
     testImplementation("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
 

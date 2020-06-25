@@ -42,7 +42,6 @@ class RxS3ImplTest
 {
 
     private static final String BUCKET_NAME = "bucketName";
-    private static final String LOCATION = "location";
     private static final String KEY = "objectKey";
     private static final String CONTENT_TYPE = "text/plain";
     private static final String RESULT = "result";

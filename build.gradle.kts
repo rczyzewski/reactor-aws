@@ -33,9 +33,10 @@ subprojects {
 
         test {
             useJUnitPlatform()
-            //include("*")
+
             include("**Test.*")
             include("**/**/**Test.*")
+            include("**/**/**IT.*")
         }
     }
 

@@ -1,12 +1,14 @@
 package com.ravenpack.aws.reactor.sqs;
 
 import com.ravenpack.aws.reactor.Localstack;
+import com.ravenpack.aws.reactor.TestHelperSqs;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
@@ -23,17 +25,21 @@ import java.util.Objects;
 
 @Slf4j
 @Testcontainers
-class RxSqsITTest
+class RxSqsIT
 {
     @Container
-    private static final Localstack localstack = new Localstack()
-            .withServices(Localstack.Service.SQS);
+    private static final Localstack localstack =  new Localstack().withServices(Localstack.Service.DDB,
+            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+            .withLogConsumer(new Slf4jLogConsumer(log));
 
-    private final SqsAsyncClient sqsClient = localstack.getSqsAsyncClient();
+    private final TestHelperSqs testHelperSqs = new TestHelperSqs(localstack);
+    private final SqsAsyncClient sqsClient = testHelperSqs.getSqsAsyncClient();
     private final RxSqs rxSqs = RxSqsImpl.builder()
             .client(sqsClient)
             .build();
 
+    private String queueName = "TestQueueName";
+    private String queueUrl;
 
     @BeforeAll
     static void beforeClass()
@@ -41,24 +47,24 @@ class RxSqsITTest
         Hooks.onOperatorDebug();
     }
 
-    @AfterAll
-    static void cleanUp()
+    @BeforeEach
+     void prepare()
     {
-        localstack.sqsCleanup();
+        queueUrl =  testHelperSqs.createSqsQueue("TestQueueName");
+
+    }
+    @AfterEach
+    void cleanUp(){
+
+        testHelperSqs.sqsCleanup();
     }
 
     @Test
     void shouldGetQueueUrl()
     {
-
-        String queueName = "queueName";
-
-        String queueUrl = localstack.createSqsQueue(queueName);
-
         StepVerifier.create(rxSqs.queueUrl(queueName))
                 .expectNext(queueUrl)
                 .verifyComplete();
-
     }
 
     @Test
@@ -68,7 +74,6 @@ class RxSqsITTest
         int numberOfMessages = 3;
         Flux<Message> messages = createMessageFlux(numberOfMessages);
 
-        String queueUrl = localstack.createSqsQueue("queueName");
 
         StepVerifier.create(rxSqs.send(queueUrl, messages, Objects::toString)
                                 .filter(t -> MessageStatus.SUCCESS.equals(t.getT2()))
@@ -95,8 +100,6 @@ class RxSqsITTest
 
         int numberOfMessages = 5;
         Flux<Message> messages = createMessageFlux(numberOfMessages);
-
-        String queueUrl = localstack.createSqsQueue("someUrl");
 
         StepVerifier.create(
             messages.window(numberOfMessages)
@@ -126,13 +129,11 @@ class RxSqsITTest
     {
         int numberOfMessages = 15;
 
-        Mono<String> queueUrl = Mono.just(localstack.createSqsQueue("someame"));
-
         Flux<Message> messages = createMessageFlux(numberOfMessages).delayElements(Duration.ofMillis(100));
 
         LocalDateTime startSend = LocalDateTime.now();
         StepVerifier.create(
-            rxSqs.send(queueUrl.block(), messages, Objects::toString)
+            rxSqs.send(queueUrl, messages, Objects::toString)
                 .filter(t -> MessageStatus.SUCCESS.equals(t.getT2()))
         ).expectNextCount(numberOfMessages)
             .verifyComplete();
@@ -140,8 +141,8 @@ class RxSqsITTest
                  Duration.between(startSend, LocalDateTime.now()).toMillis());
 
         LocalDateTime start = LocalDateTime.now();
-        StepVerifier.create( queueUrl.flatMapMany(rxSqs::getAll)
-                                .transform(rxSqs.delete(queueUrl)))
+        StepVerifier.create( Flux.just(queueUrl).flatMap(rxSqs::getAll)
+                                .transform(rxSqs.delete( Mono.just(queueUrl))))
             .expectNextCount(numberOfMessages)
             .verifyComplete();
         log.info("Processed {} messages in {}ms", numberOfMessages,

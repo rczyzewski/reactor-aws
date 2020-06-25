@@ -1,7 +1,15 @@
 package com.ravenpack.aws.reactor.s3;
 
-import com.ravenpack.aws.reactor.AwsTestLifecycle;
-import org.junit.jupiter.api.*;
+import com.ravenpack.aws.reactor.Localstack;
+import com.ravenpack.aws.reactor.TestHelpersS3;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
@@ -18,34 +26,48 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
+@Testcontainers
+@Slf4j
 class RxS3ImplIT
 {
     private static final String KEY = "objectkey";
     private static final String CONTENT_TYPE = "text/plain";
-    private static final AwsTestLifecycle awsTestLifecycle = AwsTestLifecycle.create(RxS3ImplIT.class);
 
-    private final S3AsyncClient client = awsTestLifecycle.getS3AsyncClient();
+
+
+    @Container
+    private static final Localstack localstack = new Localstack().withServices(Localstack.Service.DDB,
+            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+            .withLogConsumer(new Slf4jLogConsumer(log));
+
+    private final TestHelpersS3 testHelpersS3 = new TestHelpersS3(localstack);
+
+    private final S3AsyncClient client = testHelpersS3.getS3AsyncClient();
     private final RxS3 rxS3 = new RxS3Impl(client);
+    private String bucketName;
 
+    private static final String TEST_BUCKET_NAME = "one.bucket.less";
     @BeforeAll
     static void beforeClass()
     {
         Hooks.onOperatorDebug();
     }
 
-    @AfterAll
-    static void cleanUp()
+    @AfterEach
+     void cleanUp()
     {
-        awsTestLifecycle.s3Cleanup();
+        testHelpersS3.s3Cleanup();
+    }
+
+    @BeforeEach
+    public void  prepare(){
+        this.bucketName = testHelpersS3.createBucket(TEST_BUCKET_NAME);
     }
 
     @Test
-    @Disabled //not Checking RxS3Impl class, it's checking if we can do someging with sdk2 client
+    //@Disabled //not Checking RxS3Impl class, it's checking if we can do someging with sdk2 client
     void shouldCreateBucket()
     {
-        String bucketName = awsTestLifecycle.createBucket();
-
 
         StepVerifier.create(
             Mono.fromFuture(client.listBuckets(ListBucketsRequest.builder().build()))
@@ -62,7 +84,6 @@ class RxS3ImplIT
     @Test
     void shouldUploadAndRetrieve()
     {
-        String bucketName = awsTestLifecycle.createBucket();
         int byteArraySize = 1024;
 
         byte[] bytes = new byte[byteArraySize];
@@ -79,7 +100,6 @@ class RxS3ImplIT
     @Test
     void shouldUploadSmallFile()
     {
-        String bucketName = awsTestLifecycle.createBucket();
         rxS3.upload(bucketName, KEY, ByteBuffer.wrap("".getBytes()), CONTENT_TYPE).block();
 
         StepVerifier.create(rxS3.getObject(bucketName, KEY)
@@ -91,7 +111,6 @@ class RxS3ImplIT
     @Test
     void shouldUploadSmallFileWithoutContentType()
     {
-        String bucketName = awsTestLifecycle.createBucket();
         rxS3.upload(bucketName, KEY, ByteBuffer.wrap("".getBytes())).block();
 
         StepVerifier.create(rxS3.getObject(bucketName, KEY)
@@ -104,7 +123,6 @@ class RxS3ImplIT
     @Test
     void shouldUploadAndRetrieveAsByteBufferWithoutContentType()
     {
-        String bucketName = awsTestLifecycle.createBucket();
         int byteArraySize = 1024;
 
         byte[] bytes = new byte[byteArraySize];
@@ -121,7 +139,6 @@ class RxS3ImplIT
     @Test
     void shouldUploadBigFileAsByteBuffer()
     {
-        String bucketName = awsTestLifecycle.createBucket();
         int byteArraySize = Integer.MAX_VALUE / 20;
         byte[] bytes = new byte[byteArraySize];
         new Random().nextBytes(bytes);
@@ -133,7 +150,6 @@ class RxS3ImplIT
     @Test
     void shouldListObjects()
     {
-        String bucketName = awsTestLifecycle.createBucket();
         int byteArraySize = 1024;
 
         byte[] bytes = new byte[byteArraySize];
@@ -153,7 +169,7 @@ class RxS3ImplIT
     @Test
     void shouldDeleteObject()
     {
-        String bucketName = awsTestLifecycle.createBucket();
+
         int byteArraySize = 1024;
 
         byte[] bytes = new byte[byteArraySize];

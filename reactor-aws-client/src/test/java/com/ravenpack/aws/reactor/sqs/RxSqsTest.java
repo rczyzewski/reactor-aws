@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 class RxSqsTest
 {
     private static final String QUEUE_NAME = "queueName";
-    private static final Mono<String> QUEUE_URL = Mono.just("queueUrl");
+    private static final String QUEUE_URL = "http://queueUrl";
 
     @Mock
     private SqsAsyncClient client;
@@ -65,11 +65,14 @@ class RxSqsTest
     @Test
     void shouldGetQueueUrl()
     {
-        when(client.getQueueUrl(eq(getQueueUrlRequest())))
-            .thenReturn(getQueueUrlResponse());
+        when(client.getQueueUrl(eq(GetQueueUrlRequest.builder().queueName(QUEUE_NAME).build())))
+                .thenReturn(CompletableFuture.completedFuture(GetQueueUrlResponse
+                        .builder()
+                        .queueUrl(QUEUE_URL)
+                        .build()));
 
         StepVerifier.create(rxSqs.queueUrl(QUEUE_NAME))
-            .expectNext(QUEUE_URL.block())
+            .expectNext(QUEUE_URL)
             .verifyComplete();
     }
 
@@ -200,12 +203,12 @@ class RxSqsTest
                 .messages(Collections.emptyList())
                 .build()));
 
-        StepVerifier.create(QUEUE_URL.flatMapMany(rxSqs::getAll)
+        StepVerifier.create( Flux.just(QUEUE_URL).flatMap(rxSqs::getAll)
                                 .log())
             .expectNextCount(numberOfMessages)
             .verifyComplete();
 
-        verify(client, times(0)).getQueueUrl(eq(getQueueUrlRequest()));
+        verify(client, times(0)).getQueueUrl(any(GetQueueUrlRequest.class));
         verify(client, times(2)).receiveMessage(any(ReceiveMessageRequest.class));
         // should be called 2 times, when number of messages is bigger than max batch size = 10
         verify(client, times(0)).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -231,19 +234,6 @@ class RxSqsTest
                 .receiptHandle("receiptHandle" + id)
                 .build())
             .collect(Collectors.toList());
-    }
-
-    private GetQueueUrlRequest getQueueUrlRequest()
-    {
-        return GetQueueUrlRequest.builder().queueName(QUEUE_NAME).build();
-    }
-
-    private CompletableFuture<GetQueueUrlResponse> getQueueUrlResponse()
-    {
-        return CompletableFuture.completedFuture(GetQueueUrlResponse
-                                                     .builder()
-                                                     .queueUrl(QUEUE_URL.block())
-                                                     .build());
     }
 
     private CompletableFuture<SendMessageBatchResponse> prepareSuccessfulSendMessageBatchResponse(List<Message> messages)
