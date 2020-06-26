@@ -42,7 +42,7 @@ jobs:
 
       # run tests!
 
-      - run: gradlew build
+      - run: ./gradlew build
 
       - run:
           name: Save test results
