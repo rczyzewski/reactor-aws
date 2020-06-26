@@ -2,6 +2,7 @@ package com.ravenpack.aws.reactor;
 
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
@@ -17,6 +18,8 @@ public class TestHelperDynamoDB {
         return DynamoDbAsyncClient.builder()
                 .endpointOverride(localstack.getEndpointOverride(Localstack.Service.DDB))
                 .credentialsProvider(localstack.getCredentials())
+                .region(Region.of(localstack.getRegion()))
+
                 .build();
     }
 
@@ -25,6 +28,8 @@ public class TestHelperDynamoDB {
         return DynamoDbClient.builder()
                 .endpointOverride(localstack.getEndpointOverride(Localstack.Service.DDB))
                 .credentialsProvider(localstack.getCredentials())
+                .region(Region.of(localstack.getRegion()))
+
                 .build();
     }
 

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
 @Slf4j
+@Disabled
 class RxS3ImplIT
 {
     private static final String KEY = "objectkey";
@@ -36,8 +38,8 @@ class RxS3ImplIT
 
 
     @Container
-    private static final Localstack localstack = new Localstack().withServices(Localstack.Service.DDB,
-            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+    private static final Localstack localstack = new Localstack()
+            .withServices(Localstack.Service.S3)
             .withLogConsumer(new Slf4jLogConsumer(log));
 
     private final TestHelpersS3 testHelpersS3 = new TestHelpersS3(localstack);

@@ -6,6 +6,7 @@ import com.ravenpack.aws.reactor.TestHelperDynamoDB;
 import com.ravenpack.aws.reactor.TestHelperKinesis;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
@@ -30,16 +31,17 @@ import java.util.concurrent.Executors;
 import static software.amazon.kinesis.common.InitialPositionInStream.TRIM_HORIZON;
 import static software.amazon.kinesis.common.InitialPositionInStreamExtended.newInitialPosition;
 
-@Testcontainers
 @Slf4j
+@Disabled
+@Testcontainers
 class KinesisIT
 {
 
     private static final String STREAM = "aKinesisStream";
 
     @Container
-    private static final Localstack localstack =  new Localstack().withServices(Localstack.Service.DDB,
-            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+    private static final Localstack localstack =  new Localstack()
+            .withServices(Localstack.Service.KINESIS)
             .withLogConsumer(new Slf4jLogConsumer(log));
 
 
@@ -109,9 +111,11 @@ class KinesisIT
             .schedulerFactory(schedulerFactory)
             .build();
 
-        StepVerifier.create(rxKinesis.kcl(new WorldConnector<>(numberOfRecords * 2, Duration.ofSeconds(1)))
+        WorldConnector<ProcessRecordsInput> wc = new WorldConnector<>(numberOfRecords * 2, Duration.ofSeconds(1));
+        StepVerifier.create(rxKinesis.kcl(wc)
                                 .flatMapIterable(ProcessRecordsInput::records)
                                 .timeout(Duration.ofSeconds(20)))
-            .expectNextCount(numberOfRecords).verifyError();
+            .expectNextCount(numberOfRecords)
+            .verifyError();
     }
 }
