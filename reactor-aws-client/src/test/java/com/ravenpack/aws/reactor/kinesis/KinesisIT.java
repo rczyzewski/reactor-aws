@@ -33,15 +33,14 @@ import static software.amazon.kinesis.common.InitialPositionInStreamExtended.new
 
 @Testcontainers
 @Slf4j
-@Disabled
 class KinesisIT
 {
 
     private static final String STREAM = "aKinesisStream";
 
     @Container
-    private static final Localstack localstack =  new Localstack().withServices(Localstack.Service.DDB,
-            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+    private static final Localstack localstack =  new Localstack()
+            .withServices(Localstack.Service.KINESIS)
             .withLogConsumer(new Slf4jLogConsumer(log));
 
 

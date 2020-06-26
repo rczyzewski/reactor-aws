@@ -43,7 +43,7 @@ jobs:
 
       # run tests!
 
-      - run: ./gradlew test -d --console rich
+      - run: ./gradlew test
 
       - run:
           name: Save test results
