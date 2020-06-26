@@ -2,6 +2,7 @@ package com.ravenpack.aws.reactor.sqs;
 
 import com.ravenpack.aws.reactor.Localstack;
 import com.ravenpack.aws.reactor.TestHelperSqs;
+import com.ravenpack.aws.reactor.TestHelpersS3;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
@@ -33,6 +35,9 @@ class RxSqsIT
             .withLogConsumer(new Slf4jLogConsumer(log));
 
     private final TestHelperSqs testHelperSqs = new TestHelperSqs(localstack);
+    private final TestHelpersS3 testHelpersS3 = new TestHelpersS3(localstack);
+
+    private final S3AsyncClient client = testHelpersS3.getS3AsyncClient();
     private final SqsAsyncClient sqsClient = testHelperSqs.getSqsAsyncClient();
     private final RxSqs rxSqs = RxSqsImpl.builder()
             .client(sqsClient)
@@ -50,12 +55,10 @@ class RxSqsIT
     @BeforeEach
      void prepare()
     {
-        queueUrl =  testHelperSqs.createSqsQueue("TestQueueName");
-
+        queueUrl =  testHelperSqs.createSqsQueue(queueName);
     }
     @AfterEach
     void cleanUp(){
-
         testHelperSqs.sqsCleanup();
     }
 

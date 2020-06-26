@@ -36,7 +36,7 @@ subprojects {
 
             include("**Test.*")
             include("**/**/**Test.*")
-            include("**/**/**IT.*")
+            //include("**/**/**IT.*")
         }
     }
 

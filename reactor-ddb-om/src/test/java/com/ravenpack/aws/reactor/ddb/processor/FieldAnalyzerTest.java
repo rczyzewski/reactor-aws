@@ -9,7 +9,6 @@ import javax.tools.ToolProvider;
 import java.io.File;
 import java.nio.file.Paths;
 
-@Disabled
 @Slf4j
 class FieldAnalyzerTest
 {

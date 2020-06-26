@@ -69,6 +69,7 @@ public final class Localstack extends GenericContainer<Localstack>
             String address = this.getContainerIpAddress();
             String ipAddress = InetAddress.getByName(address).getHostAddress();
             String endpointURL = "http://" + ipAddress + ":" + this.getMappedPort(service.getPort());
+            log.info("endpoint {} URL {}", service.getPort() , endpointURL);
             return new URI(endpointURL);
 
 

@@ -1,22 +1,35 @@
 package com.ravenpack.aws.sample.it;
 
+import com.ravenpack.aws.reactor.Localstack;
 import com.ravenpack.aws.reactor.ReactorAWS;
+import com.ravenpack.aws.reactor.TestHelperDynamoDB;
 import com.ravenpack.aws.reactor.ddb.RxDynamo;
 import com.ravenpack.aws.sample.model.ListWithObjectsFieldTable;
 import com.ravenpack.aws.sample.model.ListWithObjectsFieldTableRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 import java.util.ArrayList;
 
-@Disabled
+@Slf4j
+@Testcontainers
 public class ListOfMappedObjectTest {
 
-    private static DynamoDbAsyncClient ddbClient = TestInfrastrucureHelper.dynamoDbAsyncClient();
 
+    @Container
+    private static final Localstack localstack =  new Localstack()
+            .withServices(Localstack.Service.DDB)
+            .withLogConsumer(new Slf4jLogConsumer(log));
 
+    private final TestHelperDynamoDB testHelperDynamoDB = new TestHelperDynamoDB(localstack);
+
+    private  DynamoDbAsyncClient ddbClient = testHelperDynamoDB.getDdbAsyncClient();
     private final RxDynamo rxDynamo = ReactorAWS.dynamo(ddbClient);
 
     @Test
