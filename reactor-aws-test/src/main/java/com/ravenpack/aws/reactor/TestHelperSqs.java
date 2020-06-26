@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
@@ -28,6 +29,7 @@ public class TestHelperSqs {
         return SqsAsyncClient.builder()
                 .endpointOverride(localstack.getEndpointOverride(Localstack.Service.SQS))
                 .credentialsProvider(localstack.getCredentials())
+                .region(Region.of(localstack.getRegion()))
                 .build();
     }
 
@@ -36,6 +38,8 @@ public class TestHelperSqs {
         return SqsClient.builder()
                 .endpointOverride(localstack.getEndpointOverride(Localstack.Service.SQS))
                 .credentialsProvider(localstack.getCredentials())
+                .region(Region.of(localstack.getRegion()))
+
                 .build();
     }
 
@@ -57,7 +61,6 @@ public class TestHelperSqs {
                         )
                         .log("watch out!", Level.SEVERE, false, SignalType.ON_ERROR)
                         .onErrorResume( e-> Mono.empty())
-
                 )
                 .blockLast();
     }

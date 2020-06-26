@@ -3,6 +3,7 @@ package com.ravenpack.aws.reactor;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
@@ -24,6 +25,7 @@ public class TestHelpersS3 {
         return S3AsyncClient.builder()
                 .endpointOverride(localstack.getEndpointOverride(Localstack.Service.S3))
                 .credentialsProvider(localstack.getCredentials())
+                .region(Region.of(localstack.getRegion()))
                 .build();
     }
 
