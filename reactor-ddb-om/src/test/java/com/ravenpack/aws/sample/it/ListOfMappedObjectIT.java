@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 @Slf4j
 @Testcontainers
-public class ListOfMappedObjectTest {
+public class ListOfMappedObjectIT {
 
 
     @Container

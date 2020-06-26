@@ -23,7 +23,7 @@ import java.util.function.Function;
 
 @Slf4j
 @Testcontainers
-class FilteringConditionTest
+class FilteringConditionIT
 {
     @Container
     private static final Localstack localstack =  new Localstack()
@@ -286,7 +286,7 @@ class FilteringConditionTest
     }
 
     private static String getTableNamePrefix(){
-        return FilteringConditionTest.class.getSimpleName();
+        return FilteringConditionIT.class.getSimpleName();
     }
 
     private String getTableName()

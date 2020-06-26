@@ -18,7 +18,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import java.util.UUID;
 @Slf4j
 @Testcontainers
-class TableCreationInsertAndMappingTest
+class TableCreationInsertAndMappingIT
 {
 
     @Container
@@ -207,7 +207,7 @@ class TableCreationInsertAndMappingTest
     }
 
     private static String getTableNamePrefix(){
-        return TableCreationInsertAndMappingTest.class.getSimpleName();
+        return TableCreationInsertAndMappingIT.class.getSimpleName();
     }
 
     private String getTableName()

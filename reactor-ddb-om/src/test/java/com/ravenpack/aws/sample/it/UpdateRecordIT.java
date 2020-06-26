@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Testcontainers
-class UpdateRecordTest
+class UpdateRecordIT
 {
     @Container
      private static final Localstack localstack =  new Localstack()
@@ -56,7 +56,7 @@ class UpdateRecordTest
     }
 
     private static String getTableNamePrefix(){
-        return UpdateRecordTest.class.getSimpleName();
+        return UpdateRecordIT.class.getSimpleName();
     }
 
     private String getTableName()
