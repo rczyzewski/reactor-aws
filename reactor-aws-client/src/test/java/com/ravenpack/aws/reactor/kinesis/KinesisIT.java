@@ -31,8 +31,9 @@ import java.util.concurrent.Executors;
 import static software.amazon.kinesis.common.InitialPositionInStream.TRIM_HORIZON;
 import static software.amazon.kinesis.common.InitialPositionInStreamExtended.newInitialPosition;
 
-@Testcontainers
 @Slf4j
+@Disabled
+@Testcontainers
 class KinesisIT
 {
 
@@ -110,9 +111,11 @@ class KinesisIT
             .schedulerFactory(schedulerFactory)
             .build();
 
-        StepVerifier.create(rxKinesis.kcl(new WorldConnector<>(numberOfRecords * 2, Duration.ofSeconds(1)))
+        WorldConnector<ProcessRecordsInput> wc = new WorldConnector<>(numberOfRecords * 2, Duration.ofSeconds(1));
+        StepVerifier.create(rxKinesis.kcl(wc)
                                 .flatMapIterable(ProcessRecordsInput::records)
                                 .timeout(Duration.ofSeconds(20)))
-            .expectNextCount(numberOfRecords).verifyError();
+            .expectNextCount(numberOfRecords)
+            .verifyError();
     }
 }
