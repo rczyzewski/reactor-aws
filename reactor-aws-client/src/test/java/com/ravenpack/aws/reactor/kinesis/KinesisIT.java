@@ -6,6 +6,7 @@ import com.ravenpack.aws.reactor.TestHelperDynamoDB;
 import com.ravenpack.aws.reactor.TestHelperKinesis;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
@@ -32,6 +33,7 @@ import static software.amazon.kinesis.common.InitialPositionInStreamExtended.new
 
 @Testcontainers
 @Slf4j
+@Disabled
 class KinesisIT
 {
 

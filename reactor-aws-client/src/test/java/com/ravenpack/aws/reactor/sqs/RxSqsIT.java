@@ -30,8 +30,8 @@ import java.util.Objects;
 class RxSqsIT
 {
     @Container
-    private static final Localstack localstack =  new Localstack().withServices(Localstack.Service.DDB,
-            Localstack.Service.S3, Localstack.Service.LOGS, Localstack.Service.SQS, Localstack.Service.KINESIS)
+    private static final Localstack localstack =  new Localstack()
+            .withServices(Localstack.Service.SQS)
             .withLogConsumer(new Slf4jLogConsumer(log));
 
     private final TestHelperSqs testHelperSqs = new TestHelperSqs(localstack);
