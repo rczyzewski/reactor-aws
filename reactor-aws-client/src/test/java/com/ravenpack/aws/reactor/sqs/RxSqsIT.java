@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -125,6 +126,18 @@ class RxSqsIT
         ).consumeNextWith(receiveMessageResponse ->
                               Assertions.assertEquals(numberOfMessages, receiveMessageResponse.messages().size()))
             .verifyComplete();
+    }
+
+    @Test
+    void shouldOperateOnSingleMessages() {
+        Mono<String> queueUrlMono = Mono.just(queueUrl);
+        StepVerifier.create(
+                rxSqs.send(queueUrlMono, "RandomMessage")
+                        .map(SendMessageResponse::messageId)
+                        .flatMap(it -> rxSqs.fetch(queueUrl))
+                        .flatMap(it -> rxSqs.delete(it, queueUrlMono))
+        ).expectNextMatches(it -> it.body().contains("RandomMessage"))
+                .verifyComplete();
     }
 
     @Test

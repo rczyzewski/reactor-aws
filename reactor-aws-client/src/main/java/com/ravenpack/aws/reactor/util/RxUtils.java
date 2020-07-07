@@ -13,22 +13,9 @@ import java.util.function.Function;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RxUtils
 {
-
-    public static <T> Function<Flux<List<T>>, Publisher<Map<Long, T>>> toMapWithIndex()
-    {
-        return f ->
-            f.flatMap(
-                list ->
-                    Flux.fromIterable(list)
-                        .index()
-                        .collectMap(Tuple2::getT1, Tuple2::getT2));
-    }
-
-    public static <T> Publisher<Map<Long, T>>  toNewIndex(Flux<List<T>> f){
-
-        return  f.flatMap(
-                list -> Flux.fromIterable(list)
+    public static <T> Publisher<Map<Long, T>>  toMapWithIndex(List<T> f){
+        return   Flux.fromIterable(f)
                                 .index()
-                                .collectMap(Tuple2::getT1, Tuple2::getT2));
+                                .collectMap(Tuple2::getT1, Tuple2::getT2);
     }
 }
