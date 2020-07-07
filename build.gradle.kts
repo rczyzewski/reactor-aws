@@ -1,7 +1,7 @@
 plugins {
     java
     `maven-publish`
-
+    jacoco
 }
 
 allprojects {
@@ -15,6 +15,7 @@ allprojects {
 subprojects {
     apply(plugin = "java")
     apply(plugin= "maven-publish")
+    apply(plugin= "jacoco")
 
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -40,6 +41,13 @@ subprojects {
         }
     }
 
+    tasks.jacocoTestReport {
+        dependsOn(tasks.test) // tests are required to run before generating the report
+    }
+
+    tasks.test {
+        finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+    }
 
     publishing {
         publications {
