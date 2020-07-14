@@ -5,7 +5,6 @@ import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBLocalIndexRangeKey;
 import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBRangeKey;
 import com.ravenpack.aws.reactor.ddb.datamodeling.DynamoDBTable;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Value;
 import lombok.With;
 

@@ -54,10 +54,7 @@ class RxSqsTest
         reset(client);
         rxSqs = RxSqsImpl.builder()
             .client(client)
-            .settings(RxSqsSettings.builder()
-                          .maximumBatchWait(Duration.ofSeconds(1))
-                          .parallelism(1)
-                          .build())
+            .maximumBatchWait(Duration.ofSeconds(1))
             .build();
     }
 

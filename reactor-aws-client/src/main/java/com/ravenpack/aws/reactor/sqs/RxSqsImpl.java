@@ -4,7 +4,6 @@ import com.ravenpack.aws.reactor.util.RxUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Flux;
@@ -30,23 +29,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 
 @Slf4j
 @Builder
-@AllArgsConstructor
 public class RxSqsImpl implements RxSqs
 {
-    private final static RxSqsSettings defaultSettings = RxSqsSettings.create();
 
     @Builder.Default
-    private final RxSqsSettings settings = defaultSettings ;
+    int maximumBatchSize = 10;
 
     @Builder.Default
-    private final RequestFactory requestFactory =  new RequestFactory( defaultSettings.getMaximumBatchSize(), defaultSettings.getMaximumBatchWait());
+    Duration maximumBatchWait = Duration.ofSeconds(20);
 
     private final SqsAsyncClient client;
+
+
 
     @Override
     public Mono<String> queueUrl(@NotNull String queueName)
@@ -76,11 +74,13 @@ public class RxSqsImpl implements RxSqs
     public <T> Flux<Tuple2<T, MessageStatus>> send(
         @NotNull String queueUrl, @NotNull Flux<T> messages, @NotNull Function<T, String> toString)
     {
-        return messages.bufferTimeout(settings.getMaximumBatchSize(), settings.getMaximumBatchWait())
+
+        RequestFactory requestFactory  = new RequestFactory( maximumBatchSize, maximumBatchWait);
+        return messages
+                .bufferTimeout(maximumBatchSize, maximumBatchWait)
                 .flatMap(RxUtils::toMapWithIndex)
                 .flatMap(indexedMessages ->
-                        requestFactory.createSendMessageBatchRequest(indexedMessages, queueUrl,
-                                toString)
+                        requestFactory.createSendMessageBatchRequest(indexedMessages, queueUrl,  it -> it.toString())
                                 .map(client::sendMessageBatch)
                                 .flatMap(Mono::fromFuture)
                              .log("Messages batch sent", Level.INFO, SignalType.ON_NEXT)
@@ -98,20 +98,24 @@ public class RxSqsImpl implements RxSqs
     @Override
     public Flux<Message> fetch(@NotNull String queueUrl)
     {
+        RequestFactory requestFactory  = new RequestFactory( maximumBatchSize, maximumBatchWait);
+
         ReceiveMessageRequest req = requestFactory.createReceiveMessageRequest(queueUrl);
-        return fetchMessages(req, settings.getMaximumBatchWait().multipliedBy(2) )
+        return fetchMessages(req, maximumBatchWait.multipliedBy(2) )
         .flatMap(Flux::fromIterable);
     }
 
     @Override
     public Flux<Message> getAll(@NotNull String queueUrl) {
 
+        RequestFactory requestFactory  = new RequestFactory( maximumBatchSize, maximumBatchWait);
+
         ReceiveMessageRequest req = requestFactory.createReceiveMessageRequest(queueUrl);
 
-        return fetchMessages(req, settings.getMaximumBatchWait().multipliedBy(2))
+        return fetchMessages(req, maximumBatchWait.multipliedBy(2))
                 .expand(list -> Optional.of(list)
                         .filter(it -> !list.isEmpty())
-                        .map(it -> fetchMessages(req, settings.getMaximumBatchWait().multipliedBy(2)))
+                        .map(it -> fetchMessages(req, maximumBatchWait.multipliedBy(2)))
                         .orElseGet(Flux::empty))
                 .flatMap(Flux::fromIterable);
     }
@@ -137,18 +141,18 @@ public class RxSqsImpl implements RxSqs
                     .build())
                 .map(client::deleteMessage)
                 .flatMap(Mono::fromFuture)
-                .map( it -> {
-                    log.info("I'm putting log message here ");
-                    return it;
-                }).thenReturn( message)
+                .thenReturn( message)
                 ;
     }
 
     @Override
     public @NotNull Function<Flux<Message>, Flux<DeleteMessageBatchResultEntry>> delete(Mono<String> queueUrl) {
+
+        RequestFactory requestFactory  = new RequestFactory( maximumBatchSize, maximumBatchWait);
+
         return f ->
-                f.bufferTimeout(settings.getMaximumBatchSize(), settings.getMaximumBatchWait())
-                        .flatMap( it-> RxUtils.toMapWithIndex( it) )
+                f.bufferTimeout(maximumBatchSize, maximumBatchWait)
+                        .flatMap(RxUtils::toMapWithIndex)
                         //.transform(RxUtils::toNewIndex)
                         .withLatestFrom(queueUrl, Tuples::of)
                         .flatMap(indexedMap -> requestFactory.createDeleteMessageBatchRequest(indexedMap.getT1(), indexedMap.getT2()))
@@ -187,4 +191,5 @@ public class RxSqsImpl implements RxSqs
                                 MessageStatus.FAILURE)
                 );
     }
+
 }

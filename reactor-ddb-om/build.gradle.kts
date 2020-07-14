@@ -16,7 +16,7 @@ dependencies {
     api(platform("io.projectreactor:reactor-bom:Dysprosium-SR9"))
 
 
-    api("com.squareup:javapoet:1.11.1")
+    api("com.squareup:javapoet:1.13.0")
     api("io.projectreactor:reactor-core")
 
     compileOnly("org.slf4j:slf4j-api:1.7.28")
