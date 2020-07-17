@@ -12,9 +12,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-@Value
+@Getter
 @ToString
 @Builder
 public class FieldDescription
@@ -33,8 +34,18 @@ public class FieldDescription
     @Builder.Default
     List<String> globalIndexHash = Collections.emptyList();
     String localIndex;
+    List<String>  typeArguments;
 
-    ClassDescription classDescription;
+
+    public ClassDescription getClassDescription(){
+
+        return this.getSourandingClasses().get(this.getClassReference());
+    }
+    //ClassDescription classDescription;
+    @ToString.Exclude
+    private final Map<String,ClassDescription> sourandingClasses;
+
+    String classReference;
 
     @Getter
     @AllArgsConstructor

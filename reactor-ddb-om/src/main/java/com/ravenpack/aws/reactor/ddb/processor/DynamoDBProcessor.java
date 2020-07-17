@@ -39,6 +39,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import static com.squareup.javapoet.ParameterizedTypeName.get;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 
 /***
  * This is the entry point for generating repository, based on model classes
@@ -85,22 +87,24 @@ public class DynamoDBProcessor extends AbstractProcessor
         RoundEnvironment roundEnv)
     {
 
-        ClassAnalyzer classAnalyzer = new ClassAnalyzer(logger, types);
+        AnalizerVisitor classAnalyzer = new AnalizerVisitor(logger, types);
 
-        try {
-            roundEnv.getElementsAnnotatedWith(DynamoDBTable.class)
+        roundEnv.getElementsAnnotatedWith(DynamoDBTable.class)
                 .stream()
                 .filter(it -> ElementKind.CLASS == it.getKind())
-                .map(classAnalyzer::generate)
-                .forEach(this::writeToFile);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            for (StackTraceElement line : e.getStackTrace()) {
+                .forEach(it -> {
+                    try {
+                        writeToFile(classAnalyzer.generate(it));
+                    } catch (Exception e) {
 
-                logger.error(line.getClassName() + "" + line.getMethodName() + ":" + line.getLineNumber());
-            }
-            throw e;
-        }
+                        String stackTrace = Arrays.stream(e.getStackTrace())
+                                .map(line -> line.getClassName() + ":" + line.getMethodName() + ":" + line.getLineNumber())
+                                .collect(Collectors.joining("\n"));
+                        logger.error(String.format( " %s   while processing the class: %s %n %s " , e.getMessage()  , it.getSimpleName() , stackTrace)) ;
+                        throw e;
+                    }
+                });
+
         return true;
     }
 
@@ -123,13 +127,31 @@ public class DynamoDBProcessor extends AbstractProcessor
             .addModifiers(PUBLIC)
             .addField(FieldSpec.builder(get(RxDynamo.class), "rxDynamo", FINAL, PRIVATE).build())
             .addField(FieldSpec.builder(get(String.class), "tableName", FINAL, PRIVATE).build())
-            .addFields(descriptionGenerator.getRequiredMappers(classDescription, Collections.emptyList())
+                .addTypes(classDescription.getSourandingClasses().values()
+                        .stream()
+                        .map(it -> {
+                            var  mapperClass = ClassName.get(repositoryClazz.canonicalName(), it.getName() + "CLASS");
+                            var modelClass = ClassName.get(it.getPackageName(), it.getName() );
+                            var ptype = get(ClassName.get( LiveMappingDescription.class ), modelClass);
+
+                            return TypeSpec.classBuilder(mapperClass )
+                                    .addModifiers(STATIC)
+                                    .superclass(ptype)
+                                    .addMethod(MethodSpec.constructorBuilder().addCode(descriptionGenerator.createMapper(it)).build())
+                                    .build();
+                        })
+                        .collect(Collectors.toList()))
+                .addFields(classDescription.getSourandingClasses().values()
                            .stream()
-                           .map(it -> FieldSpec.builder(get(ClassName.get(LiveMappingDescription.class),
-                                                            ClassName.get(it.getPackageName(), it.getName())),
-                                                        toSnakeCase(it.getName()),
-                                                        Modifier.STATIC, PUBLIC, FINAL)
-                               .initializer(descriptionGenerator.createMapper(it)).build())
+                           .map(it -> {
+                               var newClass = ClassName.get(repositoryClazz.canonicalName(), it.getName() + "CLASS");
+
+                               return FieldSpec.builder(get(ClassName.get(LiveMappingDescription.class),
+                                       ClassName.get(it.getPackageName(), it.getName())),
+                                       toSnakeCase(it.getName()), Modifier.STATIC, PUBLIC, FINAL)
+                                       .initializer(CodeBlock.builder().add("new $T()", newClass ).build())
+                                       .build();
+                           })
                            .collect(Collectors.toCollection(ArrayDeque::new))
             )
             .addMethod(MethodSpec.methodBuilder("requestUpdate")
@@ -296,7 +318,6 @@ public class DynamoDBProcessor extends AbstractProcessor
             .addField(FieldSpec.builder(customSearchCN, "customSearch", FINAL, PRIVATE).build())
             .addField(FieldSpec.builder(conditionType, "conditionHashMap").build())
             .addMethods(FilterMethodsCreator.createKeyFiltersMethod(customSearchKF, indexDescription))
-            //.addMethods( FilterMethodsCreator.createAllFiltersMethod(customSearchAF, indexDescription))
             .addMethod(MethodSpec.methodBuilder("end")
                            .addModifiers(PUBLIC)
                            .returns(customSearchCN)

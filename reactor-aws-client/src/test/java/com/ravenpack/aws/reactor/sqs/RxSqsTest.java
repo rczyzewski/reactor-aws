@@ -54,10 +54,7 @@ class RxSqsTest
         reset(client);
         rxSqs = RxSqsImpl.builder()
             .client(client)
-            .settings(RxSqsSettings.builder()
-                          .maximumBatchWait(Duration.ofSeconds(1))
-                          .parallelism(1)
-                          .build())
+            .maximumBatchWait(Duration.ofSeconds(1))
             .build();
     }
 
@@ -210,6 +207,40 @@ class RxSqsTest
         verify(client, times(0)).getQueueUrl(any(GetQueueUrlRequest.class));
         verify(client, times(2)).receiveMessage(any(ReceiveMessageRequest.class));
         // should be called 2 times, when number of messages is bigger than max batch size = 10
+        verify(client, times(0)).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
+    }
+
+    @Test
+    void shouldBatchProcessInSmallPieces()
+    {
+
+        int numberOfMessages = 100;
+
+        List<CompletableFuture<ReceiveMessageResponse>> responses = createReceivedMessageList(numberOfMessages)
+                .stream().map(it -> Collections.singletonList(it))
+                .map(it -> ReceiveMessageResponse
+                        .builder()
+                        .messages(it)
+                        .build())
+                .map(CompletableFuture::completedFuture)
+                .collect(Collectors.toList());
+
+        when(client.receiveMessage(any(ReceiveMessageRequest.class)))
+
+                .thenReturn(responses.get(0),
+                        (CompletableFuture<ReceiveMessageResponse>[])responses.subList(1, numberOfMessages ).stream().toArray( CompletableFuture[]:: new ))
+                .thenReturn(CompletableFuture.completedFuture(
+                        ReceiveMessageResponse
+                        .builder()
+                        .messages(Collections.emptyList())
+                        .build()));
+
+        StepVerifier.create( Flux.just(QUEUE_URL).flatMap(rxSqs::getAll))
+                .expectNextCount(numberOfMessages)
+                .verifyComplete();
+
+        verify(client, times(0)).getQueueUrl(any(GetQueueUrlRequest.class));
+        verify(client, times(numberOfMessages + 1)).receiveMessage(any(ReceiveMessageRequest.class));
         verify(client, times(0)).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 

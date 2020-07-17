@@ -4,6 +4,7 @@ import com.ravenpack.aws.reactor.ddb.processor.model.ClassDescription;
 import com.ravenpack.aws.reactor.ddb.processor.model.FieldDescription;
 import com.ravenpack.aws.reactor.ddb.processor.model.IndexDescription;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 @AllArgsConstructor
 public class ClassUtils

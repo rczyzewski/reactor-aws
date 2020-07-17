@@ -1,17 +1,18 @@
 plugins {
     `maven-publish`
     `java-library`
-    id("io.freefair.lombok") version "5.0.1"
+    id("io.freefair.lombok") version "5.1.0"
 }
 
 dependencies {
 
-    api(platform("software.amazon.awssdk:bom:2.13.39"))
+
+
+    api(platform("software.amazon.awssdk:bom:2.13.55"))
     api(platform("org.testcontainers:testcontainers-bom:1.14.3"))
     //https://mvnrepository.com/artifact/org.junit/junit-bom/5.6.2
     api(platform("org.junit:junit-bom:5.6.2"))
     api(platform("io.projectreactor:reactor-bom:Dysprosium-SR9"))
-
 
     api("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
     api("software.amazon.awssdk:dynamodb")
