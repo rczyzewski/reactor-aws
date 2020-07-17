@@ -8,6 +8,8 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
+import reactor.util.Logger;
+import reactor.util.Loggers;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
@@ -30,10 +32,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-@Slf4j
 @Builder
 public class RxSqsImpl implements RxSqs
 {
+    public static final Logger log = Loggers.getLogger(RxSqsImpl.class);
 
     @Builder.Default
     int maximumBatchSize = 10;
@@ -64,6 +66,7 @@ public class RxSqsImpl implements RxSqs
                         .build())
                     .flux()
                     .map(client::sendMessage)
+                    .log(log, Level.WARNING, true , SignalType.ON_ERROR)
                     .flatMap(Mono::fromFuture);
     }
 
@@ -80,8 +83,8 @@ public class RxSqsImpl implements RxSqs
                         requestFactory.createSendMessageBatchRequest(indexedMessages, queueUrl, serializer)
                                 .map(client::sendMessageBatch)
                                 .flatMap(Mono::fromFuture)
-                             .log("Messages batch sent", Level.INFO, SignalType.ON_NEXT)
-                             .log("Messages batch sent", Level.SEVERE, SignalType.ON_ERROR)
+                                .log(log, Level.FINER, true, SignalType.ON_NEXT)
+                                .log(log, Level.SEVERE, true, SignalType.ON_ERROR)
                              .flatMap(response -> convertToMessageStatusTuples(indexedMessages, response))
             );
     }
@@ -94,14 +97,13 @@ public class RxSqsImpl implements RxSqs
     }
 
     @Override
-    public Flux<Message> fetch(@NotNull String queueUrl)
-    {
-        RequestFactory requestFactory  = new RequestFactory( maximumBatchSize, maximumBatchWait);
+    public Flux<Message> fetch(@NotNull String queueUrl) {
+        RequestFactory requestFactory = new RequestFactory(maximumBatchSize, maximumBatchWait);
 
         ReceiveMessageRequest req = requestFactory.createReceiveMessageRequest(queueUrl);
-        return fetchMessages(req, maximumBatchWait.multipliedBy(2) )
-        .flatMap(Flux::fromIterable);
-
+        return fetchMessages(req, maximumBatchWait.multipliedBy(2))
+                .limitRate(1)
+                .concatMap(Flux::fromIterable);
     }
 
      @Override
@@ -126,8 +128,8 @@ public class RxSqsImpl implements RxSqs
         return Mono.fromCallable(() -> request)
                 .map(client::receiveMessage)
                 .flatMap(Mono::fromFuture)
-                .log("Fetched messages to process", Level.FINEST,  SignalType.ON_NEXT)
-                .log("Fetched messages to process", Level.SEVERE,  SignalType.ON_ERROR)
+                .log(log, Level.FINEST, true, SignalType.ON_NEXT)
+                .log(log, Level.SEVERE, true, SignalType.ON_ERROR)
                 .flux()
                 .limitRate(1)
                 .map(ReceiveMessageResponse::messages);
@@ -154,13 +156,16 @@ public class RxSqsImpl implements RxSqs
         return f ->
                 f.bufferTimeout(maximumBatchSize, maximumBatchWait)
                         .flatMap(RxSqsImpl::toMapWithIndex)
-                        //.transform(RxUtils::toNewIndex)
                         .withLatestFrom(queueUrl, Tuples::of)
                         .flatMap(indexedMap -> requestFactory.createDeleteMessageBatchRequest(indexedMap.getT1(), indexedMap.getT2()))
-                        .log("Batch deleting messages.", Level.FINER, SignalType.ON_NEXT)
+                        .log(log, Level.FINER, true, SignalType.ON_NEXT)
                         .flatMap(deleteRequest -> Mono.fromFuture(client.deleteMessageBatch(deleteRequest))
-                                .log("Batch delete complete. ", Level.FINER, SignalType.ON_NEXT)
-                                .log("Batch delete failed. ", Level.WARNING, SignalType.ON_ERROR)
+                                .log(log, Level.FINER, true, SignalType.ON_NEXT)
+                                .log(log, Level.WARNING, true, SignalType.ON_ERROR)
+                                .flatMap(it -> Flux.just(it)
+                                        .flatMapIterable(DeleteMessageBatchResponse::failed)
+                                        .log(log, Level.WARNING, true, SignalType.ON_NEXT)
+                                        .ignoreElements().thenReturn(it))
                                 .map(DeleteMessageBatchResponse::successful)
                                 .flatMapMany(Flux::fromIterable)
                         );
@@ -168,28 +173,14 @@ public class RxSqsImpl implements RxSqs
 
     private <T> Flux<Tuple2<T, MessageStatus>> convertToMessageStatusTuples(
             Map<Long, T> indexedMessages,
-            SendMessageBatchResponse response)
-    {
-        return getSuccessfullySendMessages(indexedMessages, response)
-                .mergeWith(getFailedMessages(indexedMessages, response));
-    }
-
-    private <T> Flux<Tuple2<T, MessageStatus>> getSuccessfullySendMessages(
-            Map<Long, T> indexedMessages,
-            SendMessageBatchResponse response)
-    {
-        return Flux.fromIterable(response.successful())
-                .map(resultEntry -> Tuples.of(indexedMessages.get(Long.valueOf(resultEntry.id())), MessageStatus.SUCCESS));
-    }
-
-    private <T> Flux<Tuple2<T, MessageStatus>> getFailedMessages(
-            Map<Long, T> indexedMessages,
-            SendMessageBatchResponse response)
-    {
-        return Flux.fromIterable(response.failed())
+            SendMessageBatchResponse response) {
+        Flux<Tuple2<T, MessageStatus>> failures = Flux.fromIterable(response.failed())
                 .map(resultErrorEntry -> Tuples.of(indexedMessages.get(Long.valueOf(resultErrorEntry.id())),
-                                MessageStatus.FAILURE)
-                );
+                        MessageStatus.FAILURE))
+                .log(log, Level.WARNING, true, SignalType.ON_NEXT);
+        return Flux.fromIterable(response.successful())
+                .map(resultEntry -> Tuples.of(indexedMessages.get(Long.valueOf(resultEntry.id())), MessageStatus.SUCCESS))
+                .mergeWith(failures);
     }
 
     public static <T> Publisher<Map<Long, T>> toMapWithIndex(List<T> f){
