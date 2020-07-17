@@ -123,9 +123,9 @@ public class RxSqsImpl implements RxSqs
 
     @NotNull
     private Flux<List<Message>> fetchMessages(ReceiveMessageRequest request, Duration timeout) {
-        return Mono.defer(() -> Mono.just(request).map(client::receiveMessage) )
+        return Mono.fromCallable(() -> request)
+                .map(client::receiveMessage)
                 .flatMap(Mono::fromFuture)
-                .log("Fetching messages:", Level.INFO, SignalType.ON_NEXT)
                 .log("Fetched messages to process", Level.FINEST,  SignalType.ON_NEXT)
                 .log("Fetched messages to process", Level.SEVERE,  SignalType.ON_ERROR)
                 .flux()

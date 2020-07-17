@@ -64,9 +64,7 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
         if (null != element.getAnnotation(DynamoDBTable.class) ||
                 null != element.getAnnotation(DynamoDBDocument.class)) {
 
-
-
-            ClassDescription discovredClass =  ClassDescription.builder()
+            ClassDescription discoveredClass =  ClassDescription.builder()
                     .name(name)
                     .packageName(element.getEnclosingElement().toString())
                     .fieldDescriptions(new ArrayList<>())
@@ -74,7 +72,7 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
                     .build();
 
             if( ! o.containsKey( name )) {
-                o.put(name, discovredClass);
+                o.put(name, discoveredClass);
 
                 element.getEnclosedElements()
                         .stream()
@@ -152,7 +150,6 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
                         .map(DynamoDBIndexRangeKey::globalSecondaryIndexNames)
                         .map(Arrays::asList)
                         .orElseGet(Collections::emptyList))
-                //.classDescription()
                  .sourandingClasses(o)
                  .classReference( ((DeclaredType) e.asType()).asElement().getSimpleName().toString() )
                 .attribute(Optional.of(DynamoDBAttribute.class)
@@ -161,10 +158,6 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
                         .orElse(name))
                 .build()
         );
-
-
-
-
 
         return this;
     }

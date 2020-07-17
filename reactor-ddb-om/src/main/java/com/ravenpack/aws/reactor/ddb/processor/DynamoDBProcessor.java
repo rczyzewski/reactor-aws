@@ -89,22 +89,19 @@ public class DynamoDBProcessor extends AbstractProcessor
 
         AnalizerVisitor classAnalyzer = new AnalizerVisitor(logger, types);
 
-
         roundEnv.getElementsAnnotatedWith(DynamoDBTable.class)
                 .stream()
                 .filter(it -> ElementKind.CLASS == it.getKind())
                 .forEach(it -> {
                     try {
                         writeToFile(classAnalyzer.generate(it));
+                    } catch (Exception e) {
 
-                    } catch (StackOverflowError | Exception e) {
-
-                        String stackTrace = Arrays.stream(e.getStackTrace()).map(line -> line.getClassName() + ":" + line.getMethodName() + ":" + line.getLineNumber())
+                        String stackTrace = Arrays.stream(e.getStackTrace())
+                                .map(line -> line.getClassName() + ":" + line.getMethodName() + ":" + line.getLineNumber())
                                 .collect(Collectors.joining("\n"));
                         logger.error(String.format( " %s   while processing the class: %s %n %s " , e.getMessage()  , it.getSimpleName() , stackTrace)) ;
-
                         throw e;
-
                     }
                 });
 
@@ -240,10 +237,6 @@ public class DynamoDBProcessor extends AbstractProcessor
                            .returns(ClassName.get(CreateTableRequest.class))
                            .build());
 
-
-
-        ;
-
         ClassUtils d = new ClassUtils(classDescription, logger);
 
         List<IndexDescription> indexes = d.createIndexsDescription();
@@ -325,7 +318,6 @@ public class DynamoDBProcessor extends AbstractProcessor
             .addField(FieldSpec.builder(customSearchCN, "customSearch", FINAL, PRIVATE).build())
             .addField(FieldSpec.builder(conditionType, "conditionHashMap").build())
             .addMethods(FilterMethodsCreator.createKeyFiltersMethod(customSearchKF, indexDescription))
-            //.addMethods( FilterMethodsCreator.createAllFiltersMethod(customSearchAF, indexDescription))
             .addMethod(MethodSpec.methodBuilder("end")
                            .addModifiers(PUBLIC)
                            .returns(customSearchCN)
