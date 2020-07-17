@@ -16,16 +16,12 @@ import lombok.SneakyThrows;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor8;
-
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,17 +45,13 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
 
         HashMap<String,ClassDescription> wc = new HashMap<>();
         element.accept(this ,wc);
-
         return wc.get(element.getSimpleName().toString());
-
     }
 
 
     public AnalizerVisitor visitType(TypeElement element,  Map<String, ClassDescription> o) {
 
-
         String name = element.getSimpleName().toString();
-        logger.warn("visitType()" + name );
 
         if (null != element.getAnnotation(DynamoDBTable.class) ||
                 null != element.getAnnotation(DynamoDBDocument.class)) {
@@ -101,20 +93,17 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
     @Override
     public Object visitVariable(VariableElement e,  Map<String, ClassDescription> o) {
 
-
         ClassDescription classDescription = o.get(e.getEnclosingElement().getSimpleName().toString() );
-
 
         FieldDescription.DDBType ddbType = Arrays.stream(FieldDescription.DDBType.values())
                 .filter(it -> it.match(e))
                 .findFirst()
                 .orElse(FieldDescription.DDBType.OTHER);
 
-
         String name = e.getSimpleName().toString() ;
+        types.asElement(e.asType()).accept(this, o);
 
-        types.asElement(e.asType()).accept(this, o)  ;
-        List<String> typeeArguments  = Collections.emptyList();
+        List<String> typeArguments  = Collections.emptyList();
 
         if(  e.asType() instanceof  DeclaredType   )
         {
@@ -122,7 +111,7 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
                 types.asElement(typeArgument).accept(this, o);
             }
 
-            typeeArguments =    ((DeclaredType) e.asType()).getTypeArguments().stream()
+            typeArguments =    ((DeclaredType) e.asType()).getTypeArguments().stream()
                     .map( types::asElement)
                     .map(it -> it.getSimpleName().toString())
                     .collect(Collectors.toList());
@@ -135,7 +124,7 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
                 .typeName(e.asType().toString())
                 .typePackage(e.asType().toString())
                 .ddbType(ddbType)
-                 .typeArguments(typeeArguments)
+                .typeArguments(typeArguments)
                 .conversionClass(getConverterMirror(e))
                 .isHashKey(Optional.ofNullable(e.getAnnotation(DynamoDBHashKey.class)).isPresent())
                 .isRangeKey(Optional.ofNullable(e.getAnnotation(DynamoDBRangeKey.class)).isPresent())
@@ -160,10 +149,5 @@ public class AnalizerVisitor extends SimpleElementVisitor8<Object, Map<String, C
         );
 
         return this;
-    }
-
-    public Object visitTypeParameter(TypeParameterElement e,  Map<String, ClassDescription> o) {
-        logger.info(" TypeParameetr:  " + e );
-        return true;
     }
 }
