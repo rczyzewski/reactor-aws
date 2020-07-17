@@ -2,7 +2,6 @@ package com.ravenpack.aws.reactor.sqs;
 
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -91,9 +90,9 @@ public class RxSqsImpl implements RxSqs
 
     @Override
     public <T> Function<Flux<T>, Flux<Tuple2<T, MessageStatus>>> send(
-        @NotNull String queueUrl, @NotNull Function<T, String> toString)
+        @NotNull String queueUrl, @NotNull Function<T, String> serializer)
     {
-        return f -> send(queueUrl, f, toString);
+        return f -> send(queueUrl, f, serializer);
     }
 
     @Override
