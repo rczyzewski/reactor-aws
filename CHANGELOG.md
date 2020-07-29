@@ -4,3 +4,4 @@
 * Removed extra configuration class for SQS, now properties have to be set 
     directly within RxSQS
 * DynamoDB object mapper - major refarctoring how model of data class is read
+* DynamoDB object mapper - support for tree like structures
