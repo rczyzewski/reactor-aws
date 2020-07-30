@@ -146,7 +146,7 @@ public class FilterMethodsCreator
             {
 
                 MethodSpec geMethod = GE.createMethod(className, fd);
-                MethodSpec leMethod = GE.createMethod(className, fd);
+                MethodSpec leMethod = LE.createMethod(className, fd);
 
                 CodeBlock coreBlock = Optional.of(CodeBlock.of(
                     "$T.builder().$L(String.valueOf(begin)).build(), $T.builder().$L(String.valueOf(end)).build()",
@@ -179,7 +179,7 @@ public class FilterMethodsCreator
                     .addCode("} else if ( begin != null ) {\n")
                     .addCode("$L(begin);\n", geMethod.name)
                     .addCode("} else if ( end != null ) {\n")
-                    .addCode("$L(begin);\n", leMethod.name)
+                    .addCode("$L(end);\n", leMethod.name)
                     .addCode("}\n")
                     .addCode("return this;\n")
                     .build();
