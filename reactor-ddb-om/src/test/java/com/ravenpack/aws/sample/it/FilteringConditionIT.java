@@ -281,8 +281,11 @@ class FilteringConditionIT
     void intBetween()
     {
 
-        checkFilter(1, it -> it.filter().valBetween(2, 421).end());
-        checkFilter(0, it -> it.filter().valBetween(2, 20).end());
+        checkFilter(1, it -> it.filter().valBetween(121, 124).end());
+        checkFilter(1, it -> it.filter().valBetween(123, 124).end());
+        checkFilter(1, it -> it.filter().valBetween(121, 123).end());
+        checkFilter(0, it -> it.filter().valBetween(124, 140).end());
+        checkFilter(0, it -> it.filter().valBetween(2, 122).end());
     }
 
     private static String getTableNamePrefix(){
