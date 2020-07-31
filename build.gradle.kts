@@ -9,7 +9,7 @@ allprojects {
 
 
     group = "com.ravenpack.aws"
-    version = "0.0.3-alpha"
+    version = "0.0.3"
 }
 
 subprojects {
