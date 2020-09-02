@@ -14,10 +14,9 @@ dependencies {
     api(platform("org.junit:junit-bom:5.6.2"))
     api(platform("io.projectreactor:reactor-bom:Dysprosium-SR9"))
 
-    api("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
-    api("software.amazon.awssdk:dynamodb")
-    api("software.amazon.awssdk:sqs")
     api("software.amazon.awssdk:s3")
+
+
     api("io.projectreactor:reactor-core")
     api("io.projectreactor.addons:reactor-extra")
 
