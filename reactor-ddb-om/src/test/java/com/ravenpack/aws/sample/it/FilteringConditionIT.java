@@ -1,9 +1,9 @@
 package com.ravenpack.aws.sample.it;
 
 import com.ravenpack.aws.reactor.Localstack;
-import com.ravenpack.aws.reactor.ReactorAWS;
 import com.ravenpack.aws.reactor.TestHelperDynamoDB;
 import com.ravenpack.aws.reactor.ddb.RxDynamo;
+import com.ravenpack.aws.reactor.ddb.RxDynamoImpl;
 import com.ravenpack.aws.sample.model.CompositePrimaryIndexTable;
 import com.ravenpack.aws.sample.model.CompositePrimaryIndexTableRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ class FilteringConditionIT
     private final TestHelperDynamoDB testHelperDynamoDB = new TestHelperDynamoDB(localstack);
 
     private  DynamoDbAsyncClient ddbClient = testHelperDynamoDB.getDdbAsyncClient();
-    private final RxDynamo rxDynamo = ReactorAWS.dynamo(ddbClient);
+    private final RxDynamo rxDynamo = new RxDynamoImpl(ddbClient);
 
 
     private CompositePrimaryIndexTableRepository repo1;

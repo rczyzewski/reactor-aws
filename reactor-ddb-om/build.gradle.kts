@@ -21,7 +21,7 @@ dependencies {
 
     compileOnly("org.slf4j:slf4j-api:1.7.28")
 
-    api(project(":reactor-aws-client"))
+    api(project(":reactor-aws-ddb"))
 
     //implementation("com.google.auto.service:auto-service:1.0-rc6")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc6")

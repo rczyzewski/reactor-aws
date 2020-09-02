@@ -16,8 +16,10 @@ dependencies {
     api(project(":reactor-aws-sqs"))
     api(project(":reactor-aws-ddb"))
     api(project(":reactor-aws-s3"))
-    api(project(":reactor-aws-kinesis"))
-
+    api("software.amazon.kinesis:amazon-kinesis-client:2.2.3")
+    api("software.amazon.awssdk:dynamodb")
+    api("software.amazon.awssdk:sqs")
+    api("software.amazon.awssdk:s3")
     api("io.projectreactor:reactor-core")
     api("io.projectreactor.addons:reactor-extra")
 
