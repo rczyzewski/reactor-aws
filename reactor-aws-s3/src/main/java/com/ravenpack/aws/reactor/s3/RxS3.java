@@ -3,14 +3,16 @@ package com.ravenpack.aws.reactor.s3;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
 import java.nio.ByteBuffer;
 import java.util.function.Function;
 
 public interface RxS3
 {
-
     Mono<byte[]> getObject(@NotNull String bucket, @NotNull String key);
+
+    Mono<HeadObjectResponse> headObject(@NotNull String bucket, @NotNull String key);
 
     Mono<Void> upload(
         @NotNull String bucket,
