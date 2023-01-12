@@ -56,7 +56,7 @@ class RxS3StreamReaderTest
         StepVerifier.create(reader.getObject(S3_BUCKET, S3_KEY))
                     .consumeNextWith(is -> {
                         try {
-                            assertArrayEquals(payload, is.readAllBytes());
+                            assertArrayEquals(payload, IOUtils.toByteArray(is));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -82,7 +82,7 @@ class RxS3StreamReaderTest
         StepVerifier.create(reader.getObject(S3_BUCKET, S3_KEY))
                     .consumeNextWith(is -> {
                         try {
-                            assertArrayEquals(payload, is.readAllBytes());
+                            assertArrayEquals(payload, IOUtils.toByteArray(is));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -146,7 +146,7 @@ class RxS3StreamReaderTest
         StepVerifier.create(reader.getObject(S3_BUCKET, S3_KEY, 4))
                     .consumeNextWith(is -> {
                         try {
-                            assertArrayEquals(payload, is.readAllBytes());
+                            assertArrayEquals(payload, IOUtils.toByteArray(is));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
