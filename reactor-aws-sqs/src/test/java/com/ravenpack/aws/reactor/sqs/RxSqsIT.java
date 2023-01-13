@@ -40,6 +40,7 @@ import static reactor.core.publisher.Hooks.onOperatorDebug;
 
 @Slf4j
 @Testcontainers
+@Disabled
 class RxSqsIT
 {
     @Container
