@@ -22,6 +22,8 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
@@ -75,6 +77,18 @@ class RxS3ImplTest
         StepVerifier.create(rxS3.getObject(BUCKET_NAME, KEY))
             .consumeNextWith(bytes -> assertEquals(RESULT, new String(bytes, StandardCharsets.UTF_8)))
             .verifyComplete();
+    }
+
+    @Test
+    void shouldHeadObject()
+    {
+        HeadObjectResponse response = HeadObjectResponse.builder().build();
+
+        when(client.headObject(any(HeadObjectRequest.class))).thenReturn(CompletableFuture.completedFuture(response));
+
+        StepVerifier.create(rxS3.headObject(BUCKET_NAME, KEY))
+                    .consumeNextWith(r -> assertEquals(response, r))
+                    .verifyComplete();
     }
 
     @Test

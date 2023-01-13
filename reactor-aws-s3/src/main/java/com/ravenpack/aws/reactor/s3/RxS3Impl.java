@@ -16,6 +16,8 @@ import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
@@ -52,20 +54,28 @@ public class RxS3Impl implements RxS3
     private static Optional<ByteBuffer> reduceListOfByteBuffers(List<ByteBuffer> list)
     {
         return list.stream()
-            .reduce((soFar, buffer) ->
-                        ByteBuffer.allocate(soFar.capacity() + buffer.capacity())
-                            .put(soFar).put(buffer));
+                   .reduce((soFar, buffer) ->
+                               ByteBuffer.allocate(soFar.capacity() + buffer.capacity())
+                                         .put(soFar).put(buffer));
     }
 
-    //TODO retrieve metadata
     @Override
     public Mono<byte[]> getObject(@NotNull String bucket, @NotNull String key)
     {
         log.debug("Fetching object as byte array from S3 bucket: {}, key: {}", bucket, key);
         return  Mono.just(GetObjectRequest.builder().bucket(bucket).key(key).build())
-                .map( it -> client.getObject(it, AsyncResponseTransformer.toBytes()))
-                .flatMap( Mono::fromFuture)
-                .map(BytesWrapper::asByteArray);
+                    .map( it -> client.getObject(it, AsyncResponseTransformer.toBytes()))
+                    .flatMap( Mono::fromFuture)
+                    .map(BytesWrapper::asByteArray);
+    }
+
+    @Override
+    public Mono<HeadObjectResponse> headObject(@NotNull String bucket, @NotNull String key)
+    {
+        return
+            Mono.just(HeadObjectRequest.builder().bucket(bucket).key(key).build())
+                .map(client::headObject)
+                .flatMap(Mono::fromFuture);
     }
 
     @Override
@@ -74,11 +84,11 @@ public class RxS3Impl implements RxS3
         log.info("Listing object in S3 bucket: {}", bucket);
 
         return Flux.from(client.listObjectsV2Paginator(ListObjectsV2Request.builder()
-                                                           .bucket(bucket)
-                                                           .prefix(prefix)
-                                                           .build()))
-            .flatMap(response -> Flux.fromIterable(response.contents()))
-            .map(S3Object::key);
+                                                                           .bucket(bucket)
+                                                                           .prefix(prefix)
+                                                                           .build()))
+                   .flatMap(response -> Flux.fromIterable(response.contents()))
+                   .map(S3Object::key);
     }
 
     @Override
@@ -87,22 +97,22 @@ public class RxS3Impl implements RxS3
         log.info("Deleting S3 object bucket: {}, key: {}", bucket, key);
 
         return Mono.just(DeleteObjectRequest.builder().bucket(bucket).key(key).build())
-                .map(client::deleteObject)
-                .flatMap(Mono::fromFuture)
-                .then();
+                   .map(client::deleteObject)
+                   .flatMap(Mono::fromFuture)
+                   .then();
     }
 
     @Override
     public Mono<Void> upload(@NotNull String bucket, @NotNull String key, @NotNull ByteBuffer content)
     {
         return Mono.just(PutObjectRequest.builder()
-                             .bucket(bucket)
-                             .key(key)
-                             .serverSideEncryption(ServerSideEncryption.AES256)
-                             .build())
-            .map(it -> client.putObject(it, AsyncRequestBody.fromByteBuffer(content)))
-            .flatMap(Mono::fromFuture)
-            .then();
+                                         .bucket(bucket)
+                                         .key(key)
+                                         .serverSideEncryption(ServerSideEncryption.AES256)
+                                         .build())
+                   .map(it -> client.putObject(it, AsyncRequestBody.fromByteBuffer(content)))
+                   .flatMap(Mono::fromFuture)
+                   .then();
     }
 
 
@@ -113,14 +123,14 @@ public class RxS3Impl implements RxS3
     {
 
         return Mono.just(PutObjectRequest.builder()
-                             .bucket(bucket)
-                             .key(key)
-                             .contentType(contentType)
-                             .serverSideEncryption(ServerSideEncryption.AES256)
-                             .build())
-            .map(it -> client.putObject(it, AsyncRequestBody.fromByteBuffer(content)))
-            .flatMap(Mono::fromFuture)
-            .then();
+                                         .bucket(bucket)
+                                         .key(key)
+                                         .contentType(contentType)
+                                         .serverSideEncryption(ServerSideEncryption.AES256)
+                                         .build())
+                   .map(it -> client.putObject(it, AsyncRequestBody.fromByteBuffer(content)))
+                   .flatMap(Mono::fromFuture)
+                   .then();
     }
 
     @Override
@@ -128,28 +138,28 @@ public class RxS3Impl implements RxS3
         @NotNull String bucket, @NotNull String key)
     {
         return flux -> Mono.just(RequestFactory.createMultipartUploadRequest(bucket, key))
-            .map(client::createMultipartUpload)
-            .flatMap(Mono::fromFuture)
-            .log("Starting multipart upload", Level.INFO, SignalType.ON_NEXT)
-            .flatMap(
-                uploadParts(flux)).then();
+                           .map(client::createMultipartUpload)
+                           .flatMap(Mono::fromFuture)
+                           .log("Starting multipart upload", Level.INFO, SignalType.ON_NEXT)
+                           .flatMap(
+                               uploadParts(flux)).then();
     }
 
 
     public Function<Flux<ByteBuffer>, Mono<Void>> upload2(
-            @NotNull String bucket, long length, @NotNull String key)
+        @NotNull String bucket, long length, @NotNull String key)
     {
 
         return flux-> Mono.just(
-        PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .serverSideEncryption(ServerSideEncryption.AES256)
-                .contentLength(length)
-                .build())
-            .map(it -> client.putObject(it, AsyncRequestBody.fromPublisher(flux)))
-            .flatMap(Mono::fromFuture)
-            .then();
+                              PutObjectRequest.builder()
+                                              .bucket(bucket)
+                                              .key(key)
+                                              .serverSideEncryption(ServerSideEncryption.AES256)
+                                              .contentLength(length)
+                                              .build())
+                          .map(it -> client.putObject(it, AsyncRequestBody.fromPublisher(flux)))
+                          .flatMap(Mono::fromFuture)
+                          .then();
     }
 
     @Override
@@ -158,11 +168,11 @@ public class RxS3Impl implements RxS3
         @NotNull String contentType)
     {
         return flux -> Mono.just(RequestFactory.createMultipartUploadRequest(bucket, key, contentType))
-            .map(client::createMultipartUpload)
-            .flatMap(Mono::fromFuture)
-            .log("Starting multipart upload", Level.INFO, SignalType.ON_NEXT)
-            .flatMap(
-                uploadParts(flux)).then();
+                           .map(client::createMultipartUpload)
+                           .flatMap(Mono::fromFuture)
+                           .log("Starting multipart upload", Level.INFO, SignalType.ON_NEXT)
+                           .flatMap(
+                               uploadParts(flux)).then();
     }
 
     @NotNull
@@ -172,19 +182,19 @@ public class RxS3Impl implements RxS3
             AtomicInteger partNumber = new AtomicInteger(1);
             AtomicInteger bufferedSize = new AtomicInteger(0);
             return flux.bufferUntil(buffer -> smallPartsBufferPredicate(bufferedSize, buffer), true)
-                .map(RxS3Impl::reduceListOfByteBuffers)
-                .filter(Optional::isPresent)
-                .map(buffer -> new PartUploadTupleWithBuffer((ByteBuffer) buffer.get().rewind()))
-                .expand(bufferTuple -> prepareAndUploadPart(bufferTuple, upload, partNumber))
-                .filter(PartUploadTupleWithBuffer::hasUploadResponse)
-                .map(PartUploadTupleWithBuffer::toPartUploadTuple)
-                .map(RequestFactory::prepareCompletePart)
-                .collectList()
-                .map(completedParts -> CompletedMultipartUpload.builder().parts(completedParts).build())
-                .map(response -> RequestFactory.prepareCompleteMultipartUploadRequest(upload, response))
-                .flatMap(request -> Mono.fromFuture(client.completeMultipartUpload(request)))
-                .log("Finished multipart upload", Level.INFO, SignalType.ON_NEXT)
-                .doOnError(abortMultipartUpload(upload));
+                       .map(RxS3Impl::reduceListOfByteBuffers)
+                       .filter(Optional::isPresent)
+                       .map(buffer -> new PartUploadTupleWithBuffer((ByteBuffer) buffer.get().rewind()))
+                       .expand(bufferTuple -> prepareAndUploadPart(bufferTuple, upload, partNumber))
+                       .filter(PartUploadTupleWithBuffer::hasUploadResponse)
+                       .map(PartUploadTupleWithBuffer::toPartUploadTuple)
+                       .map(RequestFactory::prepareCompletePart)
+                       .collectList()
+                       .map(completedParts -> CompletedMultipartUpload.builder().parts(completedParts).build())
+                       .map(response -> RequestFactory.prepareCompleteMultipartUploadRequest(upload, response))
+                       .flatMap(request -> Mono.fromFuture(client.completeMultipartUpload(request)))
+                       .log("Finished multipart upload", Level.INFO, SignalType.ON_NEXT)
+                       .doOnError(abortMultipartUpload(upload));
         };
     }
 
@@ -219,7 +229,7 @@ public class RxS3Impl implements RxS3
         log.info("Aborting multipart upload {}", upload);
         return throwable ->
             Mono.fromFuture(client.abortMultipartUpload(
-                RequestFactory.createAbortMultipartUploadRequest(upload)))
+                    RequestFactory.createAbortMultipartUploadRequest(upload)))
                 .log("Multipart upload aborted successfully {}", Level.INFO, SignalType.ON_NEXT)
                 .doOnError(error -> log.error("Failed to abort multipart upload {}", upload));
     }
