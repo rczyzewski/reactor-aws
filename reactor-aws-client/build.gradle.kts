@@ -9,7 +9,7 @@ dependencies {
 
 
     api(platform("software.amazon.awssdk:bom:2.13.55"))
-    api(platform("org.testcontainers:testcontainers-bom:1.14.3"))
+    api(platform("org.testcontainers:testcontainers-bom:1.17.6"))
     //https://mvnrepository.com/artifact/org.junit/junit-bom/5.6.2
     api(platform("org.junit:junit-bom:5.6.2"))
     api(platform("io.projectreactor:reactor-bom:Dysprosium-SR9"))
